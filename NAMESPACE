@@ -1,5 +1,4 @@
-export(insertInAddin)
-export(subsetAddin)
+export(exploredataAddin)
 
 
 import(formatR)
