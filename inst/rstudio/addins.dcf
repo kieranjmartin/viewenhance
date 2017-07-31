@@ -1,0 +1,10 @@
+Name: Insert %in%
+Description: Inserts `%in%` at the cursor position.
+Binding: insertInAddin
+Interactive: false
+
+Name: Subsets data
+Description: subset data
+Binding: subsetAddin
+Interactive: true
+

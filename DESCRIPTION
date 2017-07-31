@@ -1,0 +1,16 @@
+Package: viewenhance
+Type: Package
+Title: Gives add ins for viewing data
+Version: 0.1.0
+Authors@R: c(person("Kieran", "Martin" , email = "kieran.martin@roche.com" , role = c("aut", "cre")))
+License: GPL
+Description: Allows more power while exploring the data
+License: A licence of some kind #to do: replace me!
+Encoding: UTF-8
+LazyData: true
+Imports:
+  shiny (>= 0.13),
+  miniUI (>= 0.1.1),
+  rstudioapi (>= 0.5),
+  formatR,
+  stringr

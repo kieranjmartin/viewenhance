@@ -1,0 +1,9 @@
+export(insertInAddin)
+export(subsetAddin)
+
+
+import(formatR)
+import(miniUI)
+import(rstudioapi)
+import(shiny)
+import(stringr)
