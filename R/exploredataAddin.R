@@ -12,7 +12,8 @@ exploredataAddin<- function() {
     miniContentPanel(
       stableColumnLayout(
         selectInput('data','Select data frame', datalist),
-        textInput("subset", "Subset Expression")),
+        textInput("subset", "Subset Expression"),
+        textOutput('message')),
       stableColumnLayout(uiOutput("colselect")),
       stableColumnLayout(
         textInput("starts", "Select columns starting with:"),
@@ -27,12 +28,13 @@ exploredataAddin<- function() {
 
   # Server code for the gadget.
   server <- function(input, output, session) {
-
+    subflag = 0
     reactiveData <- reactive({
 
       # Collect inputs.
       dataString <- input$data
       subsetString <- input$subset
+
 
 
       data <- as.data.frame(get(dataString, envir = .GlobalEnv))
@@ -43,9 +45,15 @@ exploredataAddin<- function() {
 
       if ((nzchar(subsetString))) {
       # Try evaluating the subset expression within the data.
-      condition <- try(parse(text = subsetString)[[1]], silent = TRUE)
-      if (inherits(condition, "try-error"))
-        return(errorMessage("expression", paste("Failed to parse expression '", subsetString, "'.")))
+      condition <- try(parse(text = subsetString), silent = TRUE)
+      tryme <- try({
+        call <- as.call(list(as.name("subset.data.frame"),data,condition))
+        eval(call, envir = .GlobalEnv)
+        }, silent = TRUE)
+      if (inherits(tryme, "try-error")){
+        output$message <- renderText('Error in subset expression')
+      }else{subflag = 1
+      output$message <- renderText('Subset expression accepted')}
       }
         datnames <- names(as.data.frame(get(input$data, envir = .GlobalEnv)))
         if(nzchar(input$starts)){
@@ -60,7 +68,7 @@ exploredataAddin<- function() {
         if(!is.null(input$columns)){
           datnames <- datnames[datnames %in% input$columns]
         }
-        if ((nzchar(subsetString))) {
+        if ((nzchar(subsetString)) & subflag == 1) {
       call <- as.call(list(
         as.name("subset.data.frame"),
         data,
@@ -98,10 +106,19 @@ exploredataAddin<- function() {
         data <- as.data.frame(get(input$data, envir = .GlobalEnv) )
         datnames <- names(data)
 
+
         code <- paste0("View(subset(as.data.frame(",input$data,")")
-      if (nzchar(input$subset)) {
+        if (nzchar(input$subset))
+            {
+        condition <- try(parse(text = input$subset), silent = TRUE)
+        tryme <- try({
+          call <- as.call(list(as.name("subset.data.frame"),data,condition))
+          eval(call, envir = .GlobalEnv)
+        }, silent = TRUE)
+        if (!inherits(tryme, "try-error")){
         code <- paste0(code, ", ", subset = input$subset)
-      }
+        }
+        }
         if(nzchar(input$starts)){
           datnames <- datnames[str_detect(datnames,paste0('^',input$starts))]
         }
