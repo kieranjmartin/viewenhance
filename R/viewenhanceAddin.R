@@ -31,7 +31,7 @@ viewenhanceAddin<- function() {
         textInput("ends", "Select columns ending with:"),
         textInput("contains", "Select columns containing:")
       ),
-      DT::dataTableOutput("output")
+      dataTableOutput("output")
     )
   )
 
@@ -111,12 +111,12 @@ viewenhanceAddin<- function() {
 
     #data view in shiny environment
 
-    output$output <- DT::renderDataTable({
+    output$output <- renderDataTable({
       data <- eval(parse(text=codestatement()), envir = .GlobalEnv)
       if (isErrorMessage(data))
         return(NULL)
       data
-    },filter = "top",  rownames = FALSE)
+    })
 
     # Listen for 'done'. If so, output the code wrapped in a View() statement into the console
     observeEvent(input$done, {
