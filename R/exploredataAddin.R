@@ -15,6 +15,8 @@ exploredataAddin<- function() {
         textInput("subset", "Subset Expression"),
         textOutput('message')),
       stableColumnLayout(uiOutput("colselect")),
+      stableColumnLayout(selectInput('andor', 'Column selection should be applied with logic: ', c('AND', 'OR'),
+                                     'AND')),
       stableColumnLayout(
         textInput("starts", "Select columns starting with:"),
         textInput("ends", "Select columns ending with:"),
@@ -43,24 +45,36 @@ exploredataAddin<- function() {
         if (inherits(tryme, "try-error")){
           output$message <- renderText('Error in subset expression')
         }else{
-        output$message <- renderText('Subset expression accepted')
-        code <- paste0(code, ", ", subset = input$subset)}
+          output$message <- renderText('Subset expression accepted')
+          code <- paste0(code, ", ", subset = input$subset)}
       }
-      if(nzchar(input$starts)){
-        datnames <- datnames[str_detect(datnames,paste0('^',input$starts))]
+
+      if(nzchar(input$starts)| nzchar(input$ends) | nzchar(input$contains) | !is.null(input$columns))
+      {
+        cond <- ''
+        jointerm <- ifelse( input$andor =='AND', '&', '|')
+        if(nzchar(input$starts)){
+          cond <- paste0("startsWith(names(",input$data,"),'",input$starts,"')")
+        }
+        if(nzchar(input$ends)){
+          eterm <- paste0("startsWith(names(",input$data,"),'",input$starts,"')")
+          cond <- ifelse(cond=='',eterm,
+                         paste0(cond,jointerm,eterm))
+        }
+        if(nzchar(input$contains)){
+          eterm <- paste0("grepl('",input$contains,"',names(",input$data,"))")
+          cond <- ifelse(cond=='',eterm,
+                         paste0(cond,jointerm,eterm))
+        }
+        if(!is.null(input$columns)){
+          eterm <- paste0("names(",input$data,")%in%c('",paste(input$columns, collapse = "','"),"')")
+          cond <- ifelse(cond=='',eterm,
+                         paste0(cond,jointerm,eterm))
+        }
+        code <- paste0(code, ", ","select = names(",input$data,")[",cond,"])")
+      }else{
+        code <- paste0(code,')')
       }
-      if(nzchar(input$ends)){
-        datnames <- datnames[str_detect(datnames,paste0(input$ends,'$'))]
-      }
-      if(nzchar(input$contains)){
-        datnames <- datnames[str_detect(datnames,input$contains)]
-      }
-      if(!is.null(input$columns)){
-        datnames <- datnames[datnames %in% input$columns]
-      }
-      code <- paste0(code, ", ",
-                     "select = c(",
-                     paste(datnames, collapse=','),'))')
       code
     })
 
