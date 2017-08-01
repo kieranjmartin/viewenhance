@@ -132,7 +132,7 @@ viewenhanceAddin<- function() {
 
       data <- as.data.frame(get(dataString, envir = .GlobalEnv))
       namelist <- names(data)
-      selectInput("columns", "Choose columns", namelist, selected = NULL, multiple = TRUE,
+      selectInput("columns", "Choose columns", sort(namelist), selected = NULL, multiple = TRUE,
                   selectize = TRUE, width = "100%", size = NULL)
     })
 
