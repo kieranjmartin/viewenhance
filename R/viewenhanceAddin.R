@@ -27,8 +27,8 @@ viewenhanceAddin<- function() {
       stableColumnLayout(selectInput('andor', 'Column selection should be applied with logic: ', c('AND', 'OR'),
                                      'AND')),
       stableColumnLayout(
-        textInput("starts", "Select columns starting with: (use ! for multiple and - for exclusion)"),
-        textInput("ends", "Select columns ending with: (use ! for multiple and - for exclusion)"),
+        textInput("starts", "Select columns starting with: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)"),
+        textInput("ends", "Select columns ending with: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)"),
         textInput("contains", "Select columns containing:")
       ),
       dataTableOutput("output")
@@ -76,20 +76,41 @@ viewenhanceAddin<- function() {
 
 
         if(nzchar(input$starts)){
-          startvect <- strsplit(input$starts, '!')[[1]]
+          startvect <- strsplit(input$starts, "(&|\\|)")[[1]]
+          special <- gregexpr("(&|\\|)", input$starts)[[1]]
+          if (special[1] == -1){}else{
+           schar <-character(length=length(special))
+           for (i in 1:length(special))
+           {
+             schar[i] <- substr(input$starts,special[i], special[i])
+           }
+          }
+          j<-0
           for (term in startvect){
+            j<-j+1
             eterm<-ifelse(substr(term,1,1) =='-',
                paste0("!startsWith(names(",input$data,"),'",
                       substr(term,2,nchar(term)),"')"),
                paste0("startsWith(names(",input$data,"),'",term,"')"))
               cond <- ifelse(cond=='',eterm,
-                   paste0(cond,jointerm,eterm))
+                   paste0(cond,schar[j-1],eterm))
           }
         }
 
         if(nzchar(input$ends)){
-          endvect <- strsplit(input$ends, '!')[[1]]
+          endvect <- strsplit(input$ends, "(&|\\|)")[[1]]
+          special <- gregexpr("(&|\\|)", input$ends)[[1]]
+          if (special[1] == -1){}else{
+            schar <-character(length=length(special))
+            for (i in 1:length(special))
+            {
+              schar[i] <- substr(input$ends,special[i], special[i])
+            }
+          }
+          j <- 0
           for (term in endvect){
+            j<- j + 1
+            jterm <-ifelse(j==1, jointerm, schar[j-1])
             eterm<-ifelse(substr(term,1,1) =='-',
                           paste0("!endsWith(names(",input$data,"),'",
                                  substr(term,2,nchar(term)),"')"),
