@@ -1,22 +1,12 @@
 exploredataAddin<- function() {
-
-  # Get the document context.
-  context <- rstudioapi::getActiveDocumentContext()
-
-  # Set the default data to use based on the selection.
-  text <- context$selection[[1]]$text
-  trim <- function (x) gsub("^\\s+|\\s+$", "", x)
-  defaultData <- trim(text)
+  datalist <- ls(envir = .GlobalEnv)[!unlist(lapply(lapply(mget( ls(envir = .GlobalEnv), envir = .GlobalEnv) , dim),is.null))]
 
   # Generate UI for the gadget.
-  ui <- miniPage(tags$style(type="text/css",
-                            ".shiny-output-error { visibility: hidden; }",
-                            ".shiny-output-error:before { visibility: hidden; }"
-  ),
+  ui <- miniPage(
     gadgetTitleBar("Subset a data.frame"),
     miniContentPanel(
       stableColumnLayout(
-        textInput("data", "Data", value = defaultData),
+        selectInput('data','Select data frame', datalist),
         textInput("subset", "Subset Expression")),
       stableColumnLayout(uiOutput("colselect")),
       stableColumnLayout(
@@ -39,15 +29,8 @@ exploredataAddin<- function() {
       dataString <- input$data
       subsetString <- input$subset
 
-      # Check to see if there is data called 'data',
-      # and access it if possible.
-      if (!nzchar(dataString))
-        return(errorMessage("data", "No dataset available."))
 
-      if (!exists(dataString, envir = .GlobalEnv))
-        return(errorMessage("data", paste("No dataset named '", dataString, "' available.")))
-
-      data <- get(dataString, envir = .GlobalEnv)
+      data <- as.data.frame(get(dataString, envir = .GlobalEnv))
 
       if (!(nzchar(subsetString) + nzchar(input$starts) +nzchar(input$ends)+
             nzchar(input$contains))&is.null(input$columns))
@@ -59,7 +42,7 @@ exploredataAddin<- function() {
       if (inherits(condition, "try-error"))
         return(errorMessage("expression", paste("Failed to parse expression '", subsetString, "'.")))
       }
-        datnames <- names(get(input$data, envir = .GlobalEnv))
+        datnames <- names(as.data.frame(get(input$data, envir = .GlobalEnv)))
         if(nzchar(input$starts)){
           datnames <- datnames[str_detect(datnames,paste0('^',input$starts))]
         }
@@ -105,15 +88,16 @@ exploredataAddin<- function() {
 
     # Listen for 'done'.
     observeEvent(input$done, {
-
       if(!nzchar(input$data))
       {
 
       }else
       {
-        datnames <- names(get(input$data, envir = .GlobalEnv))
 
-        code <- paste0("View(subset(",input$data)
+        data <- as.data.frame(get(input$data, envir = .GlobalEnv) )
+        datnames <- names(data)
+
+        code <- paste0("View(subset(as.data.frame(",input$data,")")
       if (nzchar(input$subset)) {
         code <- paste0(code, ", ", subset = input$subset)
       }
@@ -132,6 +116,7 @@ exploredataAddin<- function() {
         code <- paste0(code, ", ",
                        "select = c(",
                        paste(datnames, collapse=','),')))')
+
         rstudioapi::sendToConsole(code)
       }
 
@@ -140,13 +125,8 @@ exploredataAddin<- function() {
 
     output$colselect <- renderUI({
       dataString <- input$data
-      if (!nzchar(dataString))
-        return(errorMessage("data", "No dataset available."))
 
-      if (!exists(dataString, envir = .GlobalEnv))
-        return(errorMessage("data", paste("No dataset named '", dataString, "' available.")))
-
-      data <- get(dataString, envir = .GlobalEnv)
+      data <- as.data.frame(get(dataString, envir = .GlobalEnv))
       namelist <- names(data)
       selectInput("columns", "Choose columns", namelist, selected = NULL, multiple = TRUE,
                   selectize = TRUE, width = "100%", size = NULL)
@@ -157,5 +137,6 @@ exploredataAddin<- function() {
   # Use a modal dialog as a viewr.
   viewer <- dialogViewer("Subset", width = 1000, height = 800)
   suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
+  #runGadget(ui, server, viewer = viewer)
 
 }
