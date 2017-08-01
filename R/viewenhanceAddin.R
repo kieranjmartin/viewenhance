@@ -27,8 +27,8 @@ viewenhanceAddin<- function() {
       stableColumnLayout(selectInput('andor', 'Column selection should be applied with logic: ', c('AND', 'OR'),
                                      'AND')),
       stableColumnLayout(
-        textInput("starts", "Select columns starting with:"),
-        textInput("ends", "Select columns ending with:"),
+        textInput("starts", "Select columns starting with: (use ! for multiple and - for exclusion)"),
+        textInput("ends", "Select columns ending with: (use ! for multiple and - for exclusion)"),
         textInput("contains", "Select columns containing:")
       ),
       dataTableOutput("output")
@@ -76,13 +76,27 @@ viewenhanceAddin<- function() {
 
 
         if(nzchar(input$starts)){
-          cond <- paste0("startsWith(names(",input$data,"),'",input$starts,"')")
+          startvect <- strsplit(input$starts, '!')[[1]]
+          for (term in startvect){
+            eterm<-ifelse(substr(term,1,1) =='-',
+               paste0("!startsWith(names(",input$data,"),'",
+                      substr(term,2,nchar(term)),"')"),
+               paste0("startsWith(names(",input$data,"),'",term,"')"))
+              cond <- ifelse(cond=='',eterm,
+                   paste0(cond,jointerm,eterm))
+          }
         }
 
         if(nzchar(input$ends)){
-          eterm <- paste0("endsWith(names(",input$data,"),'",input$ends,"')")
-          cond <- ifelse(cond=='',eterm,
-                         paste0(cond,jointerm,eterm))
+          endvect <- strsplit(input$ends, '!')[[1]]
+          for (term in endvect){
+            eterm<-ifelse(substr(term,1,1) =='-',
+                          paste0("!endsWith(names(",input$data,"),'",
+                                 substr(term,2,nchar(term)),"')"),
+                          paste0("endsWith(names(",input$data,"),'",term,"')"))
+            cond <- ifelse(cond=='',eterm,
+                           paste0(cond,jointerm,eterm))
+          }
         }
 
         if(nzchar(input$contains)){
