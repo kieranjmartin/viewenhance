@@ -1,5 +1,5 @@
-Name: Explore data frame
-Description: Allows you to view the data as you wish
-Binding: exploredataAddin
+Name: Enchanced View
+Description: Allows you to pre filter/ select columns before viewing the data
+Binding: viewenhanceAddin
 Interactive: true
 

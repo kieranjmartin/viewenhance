@@ -1,4 +1,4 @@
-exploredataAddin<- function() {
+viewenhanceAddin<- function() {
   datalist <- tryCatch(ls(envir = .GlobalEnv)[!unlist(lapply(lapply(mget( ls(envir = .GlobalEnv), envir = .GlobalEnv) , dim),is.null))],
                        error = function(e) stop("The global environment is empty!"))
   if (length(datalist) == 0)
