@@ -93,11 +93,7 @@ exploredataAddin<- function() {
 
     # Listen for 'done'.
     observeEvent(input$done, {
-      if(!nzchar(input$data))
-      {
 
-      }else
-      {
 
         data <- as.data.frame(get(input$data, envir = .GlobalEnv) )
         datnames <- names(data)
@@ -122,8 +118,9 @@ exploredataAddin<- function() {
                        "select = c(",
                        paste(datnames, collapse=','),')))')
 
+
         rstudioapi::sendToConsole(code)
-      }
+
 
       invisible(stopApp())
     })
@@ -141,7 +138,7 @@ exploredataAddin<- function() {
 
   # Use a modal dialog as a viewr.
   viewer <- dialogViewer("Subset", width = 1000, height = 800)
-  suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
-  #runGadget(ui, server, viewer = viewer)
+  #suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
+  runGadget(ui, server, viewer = viewer)
 
 }
