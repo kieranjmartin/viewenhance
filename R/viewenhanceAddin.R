@@ -22,7 +22,7 @@ viewenhanceAddin<- function() {
         textInput("ends", "Select columns ending with:"),
         textInput("contains", "Select columns containing:")
       ),
-      dataTableOutput("output")
+      DT::dataTableOutput("output")
     )
   )
 
@@ -80,12 +80,12 @@ viewenhanceAddin<- function() {
 
 
 
-    output$output <- renderDataTable({
+    output$output <- DT::renderDataTable({
       data <- eval(parse(text=codestatement()), envir = .GlobalEnv)
       if (isErrorMessage(data))
         return(NULL)
       data
-    })
+    },filter = "top",  rownames = FALSE)
 
     # Listen for 'done'.
     observeEvent(input$done, {
@@ -106,7 +106,7 @@ viewenhanceAddin<- function() {
 
   # Use a modal dialog as a viewr.
   viewer <- dialogViewer("Subset", width = 1000, height = 800)
-  #suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
-  runGadget(ui, server, viewer = viewer)
+  suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
+  #runGadget(ui, server, viewer = viewer)
 
 }
