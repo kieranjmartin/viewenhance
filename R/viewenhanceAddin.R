@@ -1,6 +1,15 @@
+#This is the only function in this package. It is designed to be called via the add in, and consequently takes no
+#arguments!
+#It builds a small shiny app for interactively viewing your data, and stores your filter/subset arguments
+#into a string which is then pushed to console when finished
+
 viewenhanceAddin<- function() {
-  datalist <- tryCatch(ls(envir = .GlobalEnv)[!unlist(lapply(lapply(mget( ls(envir = .GlobalEnv), envir = .GlobalEnv) , dim),is.null))],
+
+  #Check which objects in the name space have a dimension. If the environment is empty, return said error
+  datalist <- tryCatch({
+    ls(envir = .GlobalEnv)[!unlist(lapply(lapply(mget(ls(envir = .GlobalEnv), envir = .GlobalEnv) , dim),is.null))]},
                        error = function(e) stop("The global environment is empty!"))
+  #if there are no dimensional objects, error
   if (length(datalist) == 0)
   {
     stop("The global environment does not include any objects with dimensions!")
@@ -30,6 +39,7 @@ viewenhanceAddin<- function() {
   # Server code for the gadget.
   server <- function(input, output, session) {
 
+    #this generates the code from user inputs
     codestatement <- reactive({
       data <- as.data.frame(get(input$data, envir = .GlobalEnv) )
       datnames <- names(data)
@@ -37,11 +47,15 @@ viewenhanceAddin<- function() {
       code <- paste0("subset(as.data.frame(",input$data,")")
       if (nzchar(input$subset))
       {
+        #this checks if the subset argument works, and updates the message if it does not
         condition <- try(parse(text = input$subset), silent = TRUE)
         tryme <- try({
           call <- as.call(list(as.name("subset.data.frame"),data,condition))
           eval(call, envir = .GlobalEnv)
-        }, silent = TRUE)
+        },
+        silent = TRUE)
+
+
         if (inherits(tryme, "try-error")){
           output$message <- renderText('Error in subset expression')
         }else{
@@ -49,28 +63,44 @@ viewenhanceAddin<- function() {
           code <- paste0(code, ", ", subset = input$subset)}
       }
 
+      #look to see if the user has set up restrictions for the column names
+
       if(nzchar(input$starts)| nzchar(input$ends) | nzchar(input$contains) | !is.null(input$columns))
       {
+
+        #condition will be built up from the different user inputs
+        #with & or | depending on user input
+
         cond <- ''
         jointerm <- ifelse( input$andor =='AND', '&', '|')
+
+
         if(nzchar(input$starts)){
           cond <- paste0("startsWith(names(",input$data,"),'",input$starts,"')")
         }
+
         if(nzchar(input$ends)){
-          eterm <- paste0("startsWith(names(",input$data,"),'",input$starts,"')")
+          eterm <- paste0("endsWith(names(",input$data,"),'",input$ends,"')")
           cond <- ifelse(cond=='',eterm,
                          paste0(cond,jointerm,eterm))
         }
+
         if(nzchar(input$contains)){
           eterm <- paste0("grepl('",input$contains,"',names(",input$data,"))")
+
           cond <- ifelse(cond=='',eterm,
                          paste0(cond,jointerm,eterm))
         }
+
         if(!is.null(input$columns)){
           eterm <- paste0("names(",input$data,")%in%c('",paste(input$columns, collapse = "','"),"')")
+
           cond <- ifelse(cond=='',eterm,
                          paste0(cond,jointerm,eterm))
         }
+
+        #finally append the condition to the code statement
+
         code <- paste0(code, ", ","select = names(",input$data,")[",cond,"])")
       }else{
         code <- paste0(code,')')
@@ -79,6 +109,7 @@ viewenhanceAddin<- function() {
     })
 
 
+    #data view in shiny environment
 
     output$output <- DT::renderDataTable({
       data <- eval(parse(text=codestatement()), envir = .GlobalEnv)
@@ -87,11 +118,14 @@ viewenhanceAddin<- function() {
       data
     },filter = "top",  rownames = FALSE)
 
-    # Listen for 'done'.
+    # Listen for 'done'. If so, output the code wrapped in a View() statement into the console
     observeEvent(input$done, {
       rstudioapi::sendToConsole(paste0('View(',codestatement(),')'))
       invisible(stopApp())
     })
+
+
+    #get the available columns from the chosen data source
 
     output$colselect <- renderUI({
       dataString <- input$data
@@ -106,6 +140,7 @@ viewenhanceAddin<- function() {
 
   # Use a modal dialog as a viewr.
   viewer <- dialogViewer("Subset", width = 1000, height = 800)
+  #note we suppress messages. We remove this when debugging :)
   suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
   #runGadget(ui, server, viewer = viewer)
 
