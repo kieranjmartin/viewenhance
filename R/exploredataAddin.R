@@ -18,6 +18,7 @@ exploredataAddin<- function() {
       stableColumnLayout(
         textInput("data", "Data", value = defaultData),
         textInput("subset", "Subset Expression")),
+      stableColumnLayout(uiOutput("colselect")),
       stableColumnLayout(
         textInput("starts", "Select columns starting with:"),
         textInput("ends", "Select columns ending with:"),
@@ -49,7 +50,7 @@ exploredataAddin<- function() {
       data <- get(dataString, envir = .GlobalEnv)
 
       if (!(nzchar(subsetString) + nzchar(input$starts) +nzchar(input$ends)+
-            nzchar(input$contains)))
+            nzchar(input$contains))&is.null(input$columns))
         return(data)
 
       if ((nzchar(subsetString))) {
@@ -67,6 +68,9 @@ exploredataAddin<- function() {
         }
         if(nzchar(input$contains)){
           datnames <- datnames[str_detect(datnames,input$contains)]
+        }
+        if(!is.null(input$columns)){
+          datnames <- datnames[datnames %in% input$columns]
         }
         if ((nzchar(subsetString))) {
       call <- as.call(list(
@@ -86,7 +90,7 @@ exploredataAddin<- function() {
 
     )
 
-    output$pending <- renderUI({
+     output$pending <- renderUI({
       data <- reactiveData()
       if (isErrorMessage(data))
         h4(style = "color: #AA7732;", data$message)
@@ -122,6 +126,9 @@ exploredataAddin<- function() {
         if(nzchar(input$contains)){
           datnames <- datnames[str_detect(datnames,input$contains)]
         }
+        if(!is.null(input$columns)){
+          datnames <- datnames[datnames %in% input$columns]
+        }
         code <- paste0(code, ", ",
                        "select = c(",
                        paste(datnames, collapse=','),')))')
@@ -130,6 +137,21 @@ exploredataAddin<- function() {
 
       invisible(stopApp())
     })
+
+    output$colselect <- renderUI({
+      dataString <- input$data
+      if (!nzchar(dataString))
+        return(errorMessage("data", "No dataset available."))
+
+      if (!exists(dataString, envir = .GlobalEnv))
+        return(errorMessage("data", paste("No dataset named '", dataString, "' available.")))
+
+      data <- get(dataString, envir = .GlobalEnv)
+      namelist <- names(data)
+      selectInput("columns", "Choose columns", namelist, selected = NULL, multiple = TRUE,
+                  selectize = TRUE, width = "100%", size = NULL)
+    })
+
   }
 
   # Use a modal dialog as a viewr.
