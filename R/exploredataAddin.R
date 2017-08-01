@@ -20,7 +20,6 @@ exploredataAddin<- function() {
         textInput("ends", "Select columns ending with:"),
         textInput("contains", "Select columns containing:")
       ),
-      uiOutput("pending"),
       dataTableOutput("output")
     )
   )
@@ -28,72 +27,47 @@ exploredataAddin<- function() {
 
   # Server code for the gadget.
   server <- function(input, output, session) {
-    subflag = 0
-    reactiveData <- reactive({
 
-      # Collect inputs.
-      dataString <- input$data
-      subsetString <- input$subset
+    codestatement <- reactive({
+      data <- as.data.frame(get(input$data, envir = .GlobalEnv) )
+      datnames <- names(data)
 
-
-
-      data <- as.data.frame(get(dataString, envir = .GlobalEnv))
-
-      if (!(nzchar(subsetString) + nzchar(input$starts) +nzchar(input$ends)+
-            nzchar(input$contains))&is.null(input$columns))
-        return(data)
-
-      if ((nzchar(subsetString))) {
-      # Try evaluating the subset expression within the data.
-      condition <- try(parse(text = subsetString), silent = TRUE)
-      tryme <- try({
-        call <- as.call(list(as.name("subset.data.frame"),data,condition))
-        eval(call, envir = .GlobalEnv)
+      code <- paste0("subset(as.data.frame(",input$data,")")
+      if (nzchar(input$subset))
+      {
+        condition <- try(parse(text = input$subset), silent = TRUE)
+        tryme <- try({
+          call <- as.call(list(as.name("subset.data.frame"),data,condition))
+          eval(call, envir = .GlobalEnv)
         }, silent = TRUE)
-      if (inherits(tryme, "try-error")){
-        output$message <- renderText('Error in subset expression')
-      }else{subflag = 1
-      output$message <- renderText('Subset expression accepted')}
+        if (inherits(tryme, "try-error")){
+          output$message <- renderText('Error in subset expression')
+        }else{
+        output$message <- renderText('Subset expression accepted')
+        code <- paste0(code, ", ", subset = input$subset)}
       }
-        datnames <- names(as.data.frame(get(input$data, envir = .GlobalEnv)))
-        if(nzchar(input$starts)){
-          datnames <- datnames[str_detect(datnames,paste0('^',input$starts))]
-        }
-        if(nzchar(input$ends)){
-          datnames <- datnames[str_detect(datnames,paste0(input$ends,'$'))]
-        }
-        if(nzchar(input$contains)){
-          datnames <- datnames[str_detect(datnames,input$contains)]
-        }
-        if(!is.null(input$columns)){
-          datnames <- datnames[datnames %in% input$columns]
-        }
-        if ((nzchar(subsetString)) & subflag == 1) {
-      call <- as.call(list(
-        as.name("subset.data.frame"),
-        data,
-        condition, datnames
-      ))}else{
-        call <- as.call(list(
-          as.name("subset.data.frame"),
-          data,
-          select = datnames
-        ))
+      if(nzchar(input$starts)){
+        datnames <- datnames[str_detect(datnames,paste0('^',input$starts))]
       }
-
-      eval(call, envir = .GlobalEnv)
+      if(nzchar(input$ends)){
+        datnames <- datnames[str_detect(datnames,paste0(input$ends,'$'))]
       }
-
-    )
-
-     output$pending <- renderUI({
-      data <- reactiveData()
-      if (isErrorMessage(data))
-        h4(style = "color: #AA7732;", data$message)
+      if(nzchar(input$contains)){
+        datnames <- datnames[str_detect(datnames,input$contains)]
+      }
+      if(!is.null(input$columns)){
+        datnames <- datnames[datnames %in% input$columns]
+      }
+      code <- paste0(code, ", ",
+                     "select = c(",
+                     paste(datnames, collapse=','),'))')
+      code
     })
 
+
+
     output$output <- renderDataTable({
-      data <- reactiveData()
+      data <- eval(parse(text=codestatement()), envir = .GlobalEnv)
       if (isErrorMessage(data))
         return(NULL)
       data
@@ -101,44 +75,7 @@ exploredataAddin<- function() {
 
     # Listen for 'done'.
     observeEvent(input$done, {
-
-
-        data <- as.data.frame(get(input$data, envir = .GlobalEnv) )
-        datnames <- names(data)
-
-
-        code <- paste0("View(subset(as.data.frame(",input$data,")")
-        if (nzchar(input$subset))
-            {
-        condition <- try(parse(text = input$subset), silent = TRUE)
-        tryme <- try({
-          call <- as.call(list(as.name("subset.data.frame"),data,condition))
-          eval(call, envir = .GlobalEnv)
-        }, silent = TRUE)
-        if (!inherits(tryme, "try-error")){
-        code <- paste0(code, ", ", subset = input$subset)
-        }
-        }
-        if(nzchar(input$starts)){
-          datnames <- datnames[str_detect(datnames,paste0('^',input$starts))]
-        }
-        if(nzchar(input$ends)){
-          datnames <- datnames[str_detect(datnames,paste0(input$ends,'$'))]
-        }
-        if(nzchar(input$contains)){
-          datnames <- datnames[str_detect(datnames,input$contains)]
-        }
-        if(!is.null(input$columns)){
-          datnames <- datnames[datnames %in% input$columns]
-        }
-        code <- paste0(code, ", ",
-                       "select = c(",
-                       paste(datnames, collapse=','),')))')
-
-
-        rstudioapi::sendToConsole(code)
-
-
+      rstudioapi::sendToConsole(paste0('View(',codestatement(),')'))
       invisible(stopApp())
     })
 
