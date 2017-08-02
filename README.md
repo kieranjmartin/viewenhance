@@ -23,6 +23,8 @@ This will add an "add in" to the add in menu called "Enchanced View". You can ei
 
 Note that this function will error if there are no data frames/matrices in your global environment. If you have at least one object, this will then load the following screen.
 
+![Screen shot of view enhance](images/screen_viewenhance.png)
+
 
 Here you can subset using R logic, manually select columns (if you want to remove one, click on it and press delete) and filter based on search terms. 
 
