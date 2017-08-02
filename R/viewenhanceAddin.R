@@ -199,7 +199,8 @@ viewenhanceAddin<- function() {
         namelist <- names(data)
       }
 
-      selectInput("columns", "Choose columns", sort(namelist), selected = NULL, multiple = TRUE,
+
+      selectInput("columns", "Choose columns", sort(namelist), selected = input$columns, multiple = TRUE,
                   selectize = TRUE, width = "100%", size = NULL)
     })
 
@@ -208,7 +209,7 @@ viewenhanceAddin<- function() {
   # Use a modal dialog as a viewr.
   viewer <- dialogViewer("Subset", width = 1000, height = 800)
   #note we suppress messages. We remove this when debugging :)
-  suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
-  #runGadget(ui, server, viewer = viewer)
+  #suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
+  runGadget(ui, server, viewer = viewer)
 
 }
