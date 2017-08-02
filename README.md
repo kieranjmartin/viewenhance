@@ -9,6 +9,8 @@ This package is intended to enchance the view. Installing it and calling the lib
 
 This intended to be a quick look at your data rather than an in depth analysis tool, and is designed on that basis.
 
+Please note that this is a work in progress, so any bugs spotted please let me know!
+
 ##Using the tool
 
 To enable this tool, you will need to install the library. You can do this using devtools. Install this package if you haven't already, then use
@@ -23,10 +25,14 @@ This will add an "add in" to the add in menu called "Enchanced View". You can ei
 
 Note that this function will error if there are no data frames/matrices in your global environment. If you have at least one object, this will then load the following screen.
 
+![Screen shot of view enhance](images/screen_viewenhance.png)
+
 
 Here you can subset using R logic, manually select columns (if you want to remove one, click on it and press delete) and filter based on search terms. 
 
-Note that for the search terms you can enter multiple, so if you want columns starting with A or B you can use A|B in that field, or if you want columns that don't begin with _ or A you can use -_|-A
+Note that for the search terms you can enter multiple, so if you want columns starting with A or B you can use A|B in that field, or if you want columns that don't begin with _ or A you can use -_|-A.
+
+When finished, click done and this will open your subseted and column selected data set in the R Studio data viewer. You'll also see the logic used to create that view in your console, if you wish to use that particular command again
 
 ## Contact
 
