@@ -142,7 +142,7 @@ viewenhanceAddin<- function() {
           for (term in convect){
             j<- j + 1
             eterm<-ifelse(substr(term,1,1) =='-',
-                          paste0("grepl('",substr(term,2,nchar(term)),"',names(",input$data,"))"),
+                          paste0("!grepl('",substr(term,2,nchar(term)),"',names(",input$data,"))"),
                           paste0("grepl('",term,"',names(",input$data,"))"))
             ccond <- ifelse(ccond=='',eterm,
                            paste0(ccond,schar[j-1],eterm))
