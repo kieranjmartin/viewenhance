@@ -17,7 +17,7 @@ viewenhanceAddin<- function() {
 
   # Generate UI for the gadget.
   ui <- miniPage(
-    gadgetTitleBar("Subset a data.frame"),
+    gadgetTitleBar("Subset and select columns for a data.frame"),
     miniContentPanel(
       stableColumnLayout(
         selectInput('data','Select data frame', datalist),
