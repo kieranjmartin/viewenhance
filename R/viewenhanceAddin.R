@@ -29,7 +29,7 @@ viewenhanceAddin<- function() {
       stableColumnLayout(
         textInput("starts", "Select columns starting with: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)"),
         textInput("ends", "Select columns ending with: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)"),
-        textInput("contains", "Select columns containing:")
+        textInput("contains", "Select columns containing: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)")
       ),
       dataTableOutput("output")
     )
@@ -73,6 +73,9 @@ viewenhanceAddin<- function() {
 
         cond <- ''
         jointerm <- ifelse( input$andor =='AND', '&', '|')
+        scond <- ''
+        econd <- ''
+        ccond <-''
 
 
         if(nzchar(input$starts)){
@@ -92,10 +95,12 @@ viewenhanceAddin<- function() {
                paste0("!startsWith(names(",input$data,"),'",
                       substr(term,2,nchar(term)),"')"),
                paste0("startsWith(names(",input$data,"),'",term,"')"))
-              cond <- ifelse(cond=='',eterm,
-                   paste0(cond,schar[j-1],eterm))
+              scond <- ifelse(scond=='',eterm,
+                   paste0(scond,schar[j-1],eterm))
           }
+          scond <- ifelse(scond=='',scond,paste0('(',scond,')'))
         }
+        cond <- scond
 
         if(nzchar(input$ends)){
           endvect <- strsplit(input$ends, "(&|\\|)")[[1]]
@@ -110,22 +115,43 @@ viewenhanceAddin<- function() {
           j <- 0
           for (term in endvect){
             j<- j + 1
-            jterm <-ifelse(j==1, jointerm, schar[j-1])
             eterm<-ifelse(substr(term,1,1) =='-',
                           paste0("!endsWith(names(",input$data,"),'",
                                  substr(term,2,nchar(term)),"')"),
                           paste0("endsWith(names(",input$data,"),'",term,"')"))
-            cond <- ifelse(cond=='',eterm,
-                           paste0(cond,jointerm,eterm))
+            econd <- ifelse(econd=='',eterm,
+                           paste0(econd,schar[j-1],eterm))
           }
+          econd <- ifelse(econd=='',econd,paste0('(',econd,')'))
+          cond <-ifelse(cond == '', econd, paste0(cond, jointerm, econd))
         }
+
 
         if(nzchar(input$contains)){
-          eterm <- paste0("grepl('",input$contains,"',names(",input$data,"))")
+          convect <- strsplit(input$contains, "(&|\\|)")[[1]]
+          special <- gregexpr("(&|\\|)", input$contains)[[1]]
 
-          cond <- ifelse(cond=='',eterm,
-                         paste0(cond,jointerm,eterm))
+          if (special[1] == -1){}else{
+            schar <-character(length=length(special))
+            for (i in 1:length(special))
+            {
+              schar[i] <- substr(input$contains,special[i], special[i])
+            }
+          }
+          j <- 0
+          for (term in convect){
+            j<- j + 1
+            eterm<-ifelse(substr(term,1,1) =='-',
+                          paste0("grepl('",substr(term,2,nchar(term)),"',names(",input$data,"))"),
+                          paste0("grepl('",term,"',names(",input$data,"))"))
+            ccond <- ifelse(ccond=='',eterm,
+                           paste0(ccond,schar[j-1],eterm))
+          }
+          ccond <- ifelse(ccond=='',ccond,paste0('(',ccond,')'))
+          cond <-ifelse(cond == '', ccond, paste0(cond, jointerm, ccond))
         }
+
+
 
         if(!is.null(input$columns)){
           eterm <- paste0("names(",input$data,")%in%c('",paste(input$columns, collapse = "','"),"')")
@@ -165,8 +191,14 @@ viewenhanceAddin<- function() {
     output$colselect <- renderUI({
       dataString <- input$data
 
-      data <- as.data.frame(get(dataString, envir = .GlobalEnv))
-      namelist <- names(data)
+
+      if (input$andor == 'AND'){
+        namelist <- names(eval(parse(text=codestatement()), envir = .GlobalEnv))
+      }else{
+        data <- as.data.frame(get(dataString, envir = .GlobalEnv))
+        namelist <- names(data)
+      }
+
       selectInput("columns", "Choose columns", sort(namelist), selected = NULL, multiple = TRUE,
                   selectize = TRUE, width = "100%", size = NULL)
     })
