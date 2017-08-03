@@ -152,28 +152,28 @@ viewenhanceAddin<- function() {
         }
 
 
-
+        condsave <- ifelse(cond=='',T,cond)
         if(!is.null(input$columns)){
           eterm <- paste0("names(",input$data,")%in%c('",paste(input$columns, collapse = "','"),"')")
-
           cond <- ifelse(cond=='',eterm,
                          paste0(cond,jointerm,eterm))
         }
 
         #finally append the condition to the code statement
-
+        codesave <- paste0(code, ", ","select = names(",input$data,")[",condsave,"])")
         code <- paste0(code, ", ","select = names(",input$data,")[",cond,"])")
-      }else{
+        return(list(code=code,codesave=codesave))
+        }else{
         code <- paste0(code,')')
+        return(list(code=code,codesave=code))
       }
-      code
     })
 
 
     #data view in shiny environment
 
     output$output <- renderDataTable({
-      data <- eval(parse(text=codestatement()), envir = .GlobalEnv)
+      data <- eval(parse(text=codestatement()$code), envir = .GlobalEnv)
       if (isErrorMessage(data))
         return(NULL)
       data
@@ -181,7 +181,7 @@ viewenhanceAddin<- function() {
 
     # Listen for 'done'. If so, output the code wrapped in a View() statement into the console
     observeEvent(input$done, {
-      rstudioapi::sendToConsole(paste0('View(',codestatement(),')'))
+      rstudioapi::sendToConsole(paste0('View(',codestatement()$code,')'))
       invisible(stopApp())
     })
 
@@ -193,7 +193,7 @@ viewenhanceAddin<- function() {
 
 
       if (input$andor == 'AND'){
-        namelist <- names(eval(parse(text=codestatement()), envir = .GlobalEnv))
+        namelist <- names(eval(parse(text=codestatement()$codesave), envir = .GlobalEnv))
       }else{
         data <- as.data.frame(get(dataString, envir = .GlobalEnv))
         namelist <- names(data)
