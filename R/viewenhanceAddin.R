@@ -1,3 +1,6 @@
+#' @export
+#' @import shiny
+#' @import miniUI
 #This is the only function in this package. It is designed to be called via the add in, and consequently takes no
 #arguments!
 #It builds a small shiny app for interactively viewing your data, and stores your filter/subset arguments
@@ -41,10 +44,10 @@ viewenhanceAddin<- function() {
 
     #this generates the code from user inputs
     codestatement <- reactive({
-      data <- as.data.frame(get(input$data, envir = .GlobalEnv) )
+      data <- data.frame(get(input$data, envir = .GlobalEnv) )
       datnames <- names(data)
 
-      code <- paste0("subset(as.data.frame(",input$data,")")
+      code <- paste0("subset_lab(",input$data)
       if (nzchar(input$subset))
       {
         #this checks if the subset argument works, and updates the message if it does not
@@ -195,7 +198,7 @@ viewenhanceAddin<- function() {
       if (input$andor == 'AND'){
         namelist <- names(eval(parse(text=codestatement()$codesave), envir = .GlobalEnv))
       }else{
-        data <- as.data.frame(get(dataString, envir = .GlobalEnv))
+        data <- data.frame(get(dataString, envir = .GlobalEnv))
         namelist <- names(data)
       }
 
