@@ -31,6 +31,9 @@ viewenhanceAddin<- function() {
         textInput("ends", "Select columns ending with: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)"),
         textInput("contains", "Select columns containing: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)")
       ),
+      stableColumnLayout("Table displays current filters/ selections, only first 50 columns shown\n"),
+      stableColumnLayout(" "),
+
       dataTableOutput("output")
     )
   )
@@ -176,7 +179,7 @@ viewenhanceAddin<- function() {
       data <- eval(parse(text=codestatement()$code), envir = .GlobalEnv)
       if (isErrorMessage(data))
         return(NULL)
-      data
+      data[,seq(1,50)]
     })
 
     # Listen for 'done'. If so, output the code wrapped in a View() statement into the console
