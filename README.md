@@ -32,6 +32,14 @@ Here you can subset using R logic, manually select columns (if you want to remov
 
 Note that for the search terms you can enter multiple, so if you want columns starting with A or B you can use A|B in that field, or if you want columns that don't begin with _ or A you can use -_|-A.
 
+The different restrictions on the column selection (individually selecting columns, selecting columns that begin with a letter etc) with either be applied with AND/OR logic depending on your selection.
+
+So for instance, selecting column PT and specifying that the name should begin with A, will, with AND selected, display no columns (as PT does not begin with A). With OR, it will display the column PT and any column beginning with A. See screenshot below for a demonstration of what a query might look like:
+
+![Screen shot of view enhance with terms filled in ](images/filtersandsearch.png)
+
+![Screen shot of view enhance with terms filled in ](images/filtersapplied.png)
+
 When finished, click done and this will open your subseted and column selected data set in the R Studio data viewer. You'll also see the logic used to create that view in your console, if you wish to use that particular command again
 
 ## Contact
