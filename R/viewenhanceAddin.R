@@ -49,7 +49,7 @@ viewenhanceAddin<- function() {
       data <- data.frame(get(input$data, envir = .GlobalEnv) )
       datnames <- names(data)
 
-      code <- paste0("subset_lab(",input$data)
+      code <- paste0("viewenhance::subset_lab(",input$data)
       if (nzchar(input$subset))
       {
         #this checks if the subset argument works, and updates the message if it does not
