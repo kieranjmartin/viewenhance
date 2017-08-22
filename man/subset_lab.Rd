@@ -2,12 +2,14 @@
 % Please edit documentation in R/subset_lab.R
 \name{subset_lab}
 \alias{subset_lab}
-\title{Subset data and save attributes}
+\title{Subset data and save attributes. Note that for large data sets this will take a long time, so by default this is only reapplied for the first 1000 columns}
 \usage{
-subset_lab(x, ...)
+subset_lab(x, col_lim = 1000, ...)
 }
 \arguments{
 \item{x}{A data frame or matrix}
+
+\item{col_lim}{a limit on the number of columns the attributes are applied to.}
 
 \item{subset}{A logical vector}
 
@@ -17,20 +19,20 @@ subset_lab(x, ...)
 The subsetted data set
 }
 \description{
-Subset data and save attributes
+Subset data and save attributes. Note that for large data sets this will take a long time, so by default this is only reapplied for the first 1000 columns
 }
 \examples{
-subset(airquality, Temp > 80, select = c(Ozone, Temp))
-subset(airquality, Day == 1, select = -Temp)
-subset(airquality, select = Ozone:Wind)
+subset_lab(airquality, Temp > 80, select = c(Ozone, Temp))
+subset_lab(airquality, Day == 1, select = -Temp)
+subset_lab(airquality, select = Ozone:Wind)
 
 with(airquality, subset(Ozone, Temp > 80))
 
 ## sometimes requiring a logical 'subset' argument is a nuisance
 nm <- rownames(state.x77)
 start_with_M <- nm \%in\% grep("^M", nm, value = TRUE)
-subset(state.x77, start_with_M, Illiteracy:Murder)
+subset_lab(state.x77, start_with_M, Illiteracy:Murder)
 # but in recent versions of R this can simply be
-subset(state.x77, grepl("^M", nm), Illiteracy:Murder)
+subset_lab(state.x77, grepl("^M", nm), Illiteracy:Murder)
 
 }

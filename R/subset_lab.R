@@ -1,24 +1,25 @@
-#' Subset data and save attributes
+#' Subset data and save attributes. Note that for large data sets this will take a long time, so by default this is only reapplied for the first 1000 columns
 #' @export
 #' @param x A data frame or matrix
+#' @param col_lim a limit on the number of columns the attributes are applied to.
 #' @param subset A logical vector
 #' @param select A character vector with column names
 #' @return The subsetted data set
 #' @examples
-#' subset(airquality, Temp > 80, select = c(Ozone, Temp))
-#' subset(airquality, Day == 1, select = -Temp)
-#' subset(airquality, select = Ozone:Wind)
+#' subset_lab(airquality, Temp > 80, select = c(Ozone, Temp))
+#' subset_lab(airquality, Day == 1, select = -Temp)
+#' subset_lab(airquality, select = Ozone:Wind)
 #'
 #' with(airquality, subset(Ozone, Temp > 80))
 #'
 #' ## sometimes requiring a logical 'subset' argument is a nuisance
 #' nm <- rownames(state.x77)
 #' start_with_M <- nm %in% grep("^M", nm, value = TRUE)
-#' subset(state.x77, start_with_M, Illiteracy:Murder)
+#' subset_lab(state.x77, start_with_M, Illiteracy:Murder)
 #' # but in recent versions of R this can simply be
-#' subset(state.x77, grepl("^M", nm), Illiteracy:Murder)
+#' subset_lab(state.x77, grepl("^M", nm), Illiteracy:Murder)
 #'
-subset_lab <- function(x, ...){
+subset_lab <- function(x, col_lim = 1000, ...){
 
   if(is.data.frame(x))
   {
@@ -27,13 +28,11 @@ subset_lab <- function(x, ...){
   }else{
     x<-data.frame(x)
     attsave <- lapply(x, attributes)
-    attsave <- lapply(x, attributes)
     outdat <- subset(data.frame(x), ...)
   }
-  N_att <- names(attsave)[names(attsave) %in% names(outdat)]
-
+  N_att <- min(names(attsave)[names(attsave) %in% names(outdat)], col_lim)
   for (att in N_att){
     attributes(outdat[[att]]) <- attsave[[att]]
   }
- outdat
+  outdat
 }
