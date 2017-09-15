@@ -196,14 +196,9 @@ viewenhanceAddin<- function() {
 
     output$colselect <- renderUI({
       dataString <- input$data
+      data <- data.frame(get(dataString, envir = .GlobalEnv))
+      namelist <- names(data)
 
-
-      if (input$andor == 'AND'){
-        namelist <- names(eval(parse(text=codestatement()$codesave), envir = .GlobalEnv))
-      }else{
-        data <- data.frame(get(dataString, envir = .GlobalEnv))
-        namelist <- names(data)
-      }
 
 
       selectInput("columns", "Choose columns", sort(namelist), selected = input$columns, multiple = TRUE,
