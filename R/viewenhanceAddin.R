@@ -1,17 +1,15 @@
+#' Shiny view of data
 #' @export
 #' @import shiny
 #' @import miniUI
-#This is the only function in this package. It is designed to be called via the add in, and consequently takes no
-#arguments!
-#It builds a small shiny app for interactively viewing your data, and stores your filter/subset arguments
-#into a string which is then pushed to console when finished
+#' @return A shiny box, which, when options are chosen, will put a View command into the console
 
 viewenhanceAddin<- function() {
 
   #Check which objects in the name space have a dimension. If the environment is empty, return said error
   datalist <- tryCatch({
     ls(envir = .GlobalEnv)[!unlist(lapply(lapply(mget(ls(envir = .GlobalEnv), envir = .GlobalEnv) , dim),is.null))]},
-                       error = function(e) stop("The global environment is empty!"))
+    error = function(e) stop("The global environment is empty!"))
   #if there are no dimensional objects, error
   if (length(datalist) == 0)
   {
@@ -26,7 +24,10 @@ viewenhanceAddin<- function() {
         selectInput('data','Select data frame', datalist),
         textInput("subset", "Subset Expression"),
         textOutput('message')),
-      stableColumnLayout(uiOutput("colselect")),
+      stableColumnLayout(  selectizeInput(
+        inputId = 'columns', label = "Choose columns",
+        choices = NULL, multiple = TRUE, width = "100%"
+      )),
       stableColumnLayout(selectInput('andor', 'Column selection should be applied with logic: ', c('AND', 'OR'),
                                      'AND')),
       stableColumnLayout(
@@ -65,7 +66,7 @@ viewenhanceAddin<- function() {
           output$message <- renderText('Error in subset expression')
         }else{
           output$message <- renderText('Subset expression accepted')
-          code <- paste0(code, ", ", subset = input$subset)}
+          code <- paste0(code, ",subset = ",  input$subset)}
       }
 
       #look to see if the user has set up restrictions for the column names
@@ -87,21 +88,21 @@ viewenhanceAddin<- function() {
           startvect <- strsplit(input$starts, "(&|\\|)")[[1]]
           special <- gregexpr("(&|\\|)", input$starts)[[1]]
           if (special[1] == -1){}else{
-           schar <-character(length=length(special))
-           for (i in 1:length(special))
-           {
-             schar[i] <- substr(input$starts,special[i], special[i])
-           }
+            schar <-character(length=length(special))
+            for (i in 1:length(special))
+            {
+              schar[i] <- substr(input$starts,special[i], special[i])
+            }
           }
           j<-0
           for (term in startvect){
             j<-j+1
             eterm<-ifelse(substr(term,1,1) =='-',
-               paste0("!startsWith(names(",input$data,"),'",
-                      substr(term,2,nchar(term)),"')"),
-               paste0("startsWith(names(",input$data,"),'",term,"')"))
-              scond <- ifelse(scond=='',eterm,
-                   paste0(scond,schar[j-1],eterm))
+                          paste0("!startsWith(names(",input$data,"),'",
+                                 substr(term,2,nchar(term)),"')"),
+                          paste0("startsWith(names(",input$data,"),'",term,"')"))
+            scond <- ifelse(scond=='',eterm,
+                            paste0(scond,schar[j-1],eterm))
           }
           scond <- ifelse(scond=='',scond,paste0('(',scond,')'))
         }
@@ -125,7 +126,7 @@ viewenhanceAddin<- function() {
                                  substr(term,2,nchar(term)),"')"),
                           paste0("endsWith(names(",input$data,"),'",term,"')"))
             econd <- ifelse(econd=='',eterm,
-                           paste0(econd,schar[j-1],eterm))
+                            paste0(econd,schar[j-1],eterm))
           }
           econd <- ifelse(econd=='',econd,paste0('(',econd,')'))
           cond <-ifelse(cond == '', econd, paste0(cond, jointerm, econd))
@@ -150,7 +151,7 @@ viewenhanceAddin<- function() {
                           paste0("!grepl('",substr(term,2,nchar(term)),"',names(",input$data,"))"),
                           paste0("grepl('",term,"',names(",input$data,"))"))
             ccond <- ifelse(ccond=='',eterm,
-                           paste0(ccond,schar[j-1],eterm))
+                            paste0(ccond,schar[j-1],eterm))
           }
           ccond <- ifelse(ccond=='',ccond,paste0('(',ccond,')'))
           cond <-ifelse(cond == '', ccond, paste0(cond, jointerm, ccond))
@@ -168,7 +169,7 @@ viewenhanceAddin<- function() {
         codesave <- paste0(code, ", ","select = names(",input$data,")[",condsave,"])")
         code <- paste0(code, ", ","select = names(",input$data,")[",cond,"])")
         return(list(code=code,codesave=codesave))
-        }else{
+      }else{
         code <- paste0(code,')')
         return(list(code=code,codesave=code))
       }
@@ -194,21 +195,10 @@ viewenhanceAddin<- function() {
 
     #get the available columns from the chosen data source
 
-    output$colselect <- renderUI({
-      dataString <- input$data
-
-
-      if (input$andor == 'AND'){
-        namelist <- names(eval(parse(text=codestatement()$codesave), envir = .GlobalEnv))
-      }else{
-        data <- data.frame(get(dataString, envir = .GlobalEnv))
-        namelist <- names(data)
-      }
-
-
-      selectInput("columns", "Choose columns", sort(namelist), selected = input$columns, multiple = TRUE,
-                  selectize = TRUE, width = "100%", size = NULL)
-    })
+    observe(
+      updateSelectizeInput(session = session, inputId = 'columns',
+                           choices = c(sort(eval(parse(text = paste0("sort(names(",input$data,"))"))))), server = TRUE,
+                           selected = input$columns))
 
   }
 

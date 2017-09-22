@@ -4,7 +4,10 @@ Title: Addin for viewing data
 Version: 0.1.0
 Authors@R: c(person("Kieran", "Martin" , email = "kieran.martin@roche.com" , role = c("aut", "cre")))
 License: GPL
-Description: Allows more power while exploring the data
+Description: Allows more power while exploring the data. This provides a shiny add in to
+    explore data frames, pick columns, filter the data.
+    This uses base R, so a new function subset_lab was created to preserve the labels
+    of subsetted data.
 Encoding: UTF-8
 LazyData: true
 Imports:

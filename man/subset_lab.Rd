@@ -2,24 +2,29 @@
 % Please edit documentation in R/subset_lab.R
 \name{subset_lab}
 \alias{subset_lab}
-\title{Subset data and save attributes. Note that for large data sets this will take a long time, so by default this is only reapplied for the first 1000 columns}
+\title{Subset data and save attributes.
+Subset data and save attributes.
+Note that for large data sets this will take a long time,
+so by default this is only reapplied for the first 1000 columns}
 \usage{
-subset_lab(x, col_lim = 1000, ...)
+subset_lab(x, ..., col_lim = 1000)
 }
 \arguments{
-\item{x}{A data frame or matrix}
+\item{x}{A data frame or matrix.}
 
-\item{col_lim}{a limit on the number of columns the attributes are applied to.}
+\item{...}{Other arguments passed to subset. In particular, we give subset
+and select arguments here (see examples and subset help for more)}
 
-\item{subset}{A logical vector}
-
-\item{select}{A character vector with column names}
+\item{col_lim}{A limit on the number of columns the attributes are applied to.}
 }
 \value{
 The subsetted data set
 }
 \description{
-Subset data and save attributes. Note that for large data sets this will take a long time, so by default this is only reapplied for the first 1000 columns
+Subset data and save attributes.
+Subset data and save attributes.
+Note that for large data sets this will take a long time,
+so by default this is only reapplied for the first 1000 columns
 }
 \examples{
 subset_lab(airquality, Temp > 80, select = c(Ozone, Temp))

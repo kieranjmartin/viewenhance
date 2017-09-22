@@ -1,9 +1,12 @@
-#' Subset data and save attributes. Note that for large data sets this will take a long time, so by default this is only reapplied for the first 1000 columns
+#' Subset data and save attributes.
+#' Subset data and save attributes.
+#' Note that for large data sets this will take a long time,
+#' so by default this is only reapplied for the first 1000 columns
 #' @export
-#' @param x A data frame or matrix
-#' @param col_lim a limit on the number of columns the attributes are applied to.
-#' @param subset A logical vector
-#' @param select A character vector with column names
+#' @param x A data frame or matrix.
+#' @param ... Other arguments passed to subset. In particular, we give subset
+#'      and select arguments here (see examples and subset help for more)
+#' @param col_lim A limit on the number of columns the attributes are applied to.
 #' @return The subsetted data set
 #' @examples
 #' subset_lab(airquality, Temp > 80, select = c(Ozone, Temp))
@@ -19,7 +22,7 @@
 #' # but in recent versions of R this can simply be
 #' subset_lab(state.x77, grepl("^M", nm), Illiteracy:Murder)
 #'
-subset_lab <- function(x, col_lim = 1000, ...){
+subset_lab <- function(x, ..., col_lim = 1000){
 
   if(is.data.frame(x))
   {
@@ -36,3 +39,4 @@ subset_lab <- function(x, col_lim = 1000, ...){
   }
   outdat
 }
+
