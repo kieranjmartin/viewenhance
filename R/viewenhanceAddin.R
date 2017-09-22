@@ -24,10 +24,7 @@ viewenhanceAddin<- function() {
         selectInput('data','Select data frame', datalist),
         textInput("subset", "Subset Expression"),
         textOutput('message')),
-      stableColumnLayout(  selectizeInput(
-        inputId = 'columns', label = "Choose columns",
-        choices = NULL, multiple = TRUE, width = "100%"
-      )),
+      stableColumnLayout(uiOutput("colselect")),
       stableColumnLayout(selectInput('andor', 'Column selection should be applied with logic: ', c('AND', 'OR'),
                                      'AND')),
       stableColumnLayout(
@@ -177,13 +174,17 @@ viewenhanceAddin<- function() {
 
 
     #data view in shiny environment
-
     output$output <- renderDataTable({
       data <- eval(parse(text=codestatement()$code), envir = .GlobalEnv)
       if (isErrorMessage(data))
-        return(NULL)
+        return(data.frame(x = c('Failure. Code string is ',
+                                codestatement()$code)))
       N <- min(input$colno, dim(data)[2])
       data[,seq(1,N)]
+
+      data
+
+
     })
 
     # Listen for 'done'. If so, output the code wrapped in a View() statement into the console
@@ -195,11 +196,13 @@ viewenhanceAddin<- function() {
 
     #get the available columns from the chosen data source
 
-    observe(
-      updateSelectizeInput(session = session, inputId = 'columns',
-                           choices = c(sort(eval(parse(text = paste0("sort(names(",input$data,"))"))))), server = TRUE,
-                           selected = input$columns))
-
+    output$colselect <- renderUI({
+      dataString <- input$data
+      data <- data.frame(get(dataString, envir = .GlobalEnv))
+      namelist <- names(data)
+      selectInput("columns", "Choose columns", sort(namelist), selected = input$columns, multiple = TRUE,
+                  selectize = TRUE, width = "100%", size = NULL)
+    })
 
   }
 
