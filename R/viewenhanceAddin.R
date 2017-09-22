@@ -200,6 +200,7 @@ viewenhanceAddin<- function() {
                            choices = c(sort(eval(parse(text = paste0("sort(names(",input$data,"))"))))), server = TRUE,
                            selected = input$columns))
 
+
   }
 
   # Use a modal dialog as a viewr.
