@@ -1,6 +1,6 @@
 # viewenhance
 
-##Introduction 
+## Introduction 
 This package produces an add in for r studio to help browse data.
 
 I like R studios data view, it looks nice and allows infinite scroll. However, it has some limitations. You can filter, but in a somewhat restricted fashion, and you cannot hide columns or select particular ones.
@@ -11,7 +11,7 @@ This intended to be a quick look at your data rather than an in depth analysis t
 
 Please note that this is a work in progress, so any bugs spotted please let me know!
 
-##Using the tool
+## Using the tool
 
 To enable this tool, you will need to install the library. You can do this using devtools. Install this package if you haven't already, then use
 
