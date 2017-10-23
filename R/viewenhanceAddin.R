@@ -8,8 +8,8 @@ viewenhanceAddin<- function() {
 
   #Check which objects in the name space have a dimension. If the environment is empty, return said error
   datalist <- tryCatch({
-    ls(envir = .GlobalEnv)[!unlist(lapply(lapply(mget(ls(envir = .GlobalEnv), envir = .GlobalEnv) , dim),is.null))]},
-    error = function(e) stop("The global environment is empty!"))
+    ls(envir = .GlobalEnv)[unlist(lapply(mget(ls(envir = .GlobalEnv), envir = .GlobalEnv) , is.data.frame))]},
+    error = function(e) stop("There are no data frames in the global environment!"))
   #if there are no dimensional objects, error
   if (length(datalist) == 0)
   {
