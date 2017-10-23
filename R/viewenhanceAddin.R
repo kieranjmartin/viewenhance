@@ -2,10 +2,19 @@
 #' @export
 #' @import shiny
 #' @import miniUI
+#' @param datain Provide a data frame to explore
 #' @return A shiny box, which, when options are chosen, will put a View command into the console
 
-viewenhanceAddin<- function() {
+viewenhanceAddin<- function(datain = NULL) {
 
+
+  if (!is.null(datain)){
+    if (is.data.frame(datain)){
+    datalist <- deparse(substitute(datain))
+    }else{
+      stop("datain needs to be a data frame")
+    }
+  }else{
   #Check which objects in the name space have a dimension. If the environment is empty, return said error
   datalist <- tryCatch({
     ls(envir = .GlobalEnv)[unlist(lapply(mget(ls(envir = .GlobalEnv), envir = .GlobalEnv) , is.data.frame))]},
@@ -14,6 +23,7 @@ viewenhanceAddin<- function() {
   if (length(datalist) == 0)
   {
     stop("The global environment does not include any objects with dimensions!")
+  }
   }
 
   # Generate UI for the gadget.
@@ -47,10 +57,14 @@ viewenhanceAddin<- function() {
 
     #this generates the code from user inputs
     codestatement <- reactive({
+      if(!is.null(datain)){
+        data <- datain
+      }else{
       data <- data.frame(get(input$data, envir = .GlobalEnv) )
+      }
       datnames <- names(data)
-
       code <- paste0("viewenhance::subset_lab(",input$data)
+
       if (nzchar(input$subset))
       {
         #this checks if the subset argument works, and updates the message if it does not
@@ -179,7 +193,6 @@ viewenhanceAddin<- function() {
     #data view in shiny environment
     output$output <- renderDataTable({
       data <- eval(parse(text=codestatement()$code), envir = .GlobalEnv)
-     # data<-data.frame(rnorm(10))
       if (isErrorMessage(data))
         return(data.frame(x = c('Failure. Code string is ',
                                 codestatement()$code)))
@@ -202,7 +215,11 @@ viewenhanceAddin<- function() {
       updateSelectizeInput(session = session,
                            inputId = 'columns',
                            choices = {dataString <- input$data
+                           if(!is.null(datain)){
+                             data <- datain
+                           }else{
                            data <- data.frame(get(dataString, envir = .GlobalEnv))
+                           }
                            namelist <- names(data)
                            sort(namelist)
                              },

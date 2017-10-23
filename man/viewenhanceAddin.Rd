@@ -4,7 +4,10 @@
 \alias{viewenhanceAddin}
 \title{Shiny view of data}
 \usage{
-viewenhanceAddin()
+viewenhanceAddin(datain = NULL)
+}
+\arguments{
+\item{datain}{Provide a data frame to explore}
 }
 \value{
 A shiny box, which, when options are chosen, will put a View command into the console
