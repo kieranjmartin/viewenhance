@@ -24,7 +24,10 @@ viewenhanceAddin<- function() {
         selectInput('data','Select data frame', datalist),
         textInput("subset", "Subset Expression"),
         textOutput('message')),
-      stableColumnLayout(uiOutput("colselect")),
+      stableColumnLayout(selectizeInput(inputId = "columns", label = "Choose columns",
+                                       choices = NULL, multiple = TRUE,
+                                       selected = NULL,
+                                            width = "100%", size = NULL)),
       stableColumnLayout(selectInput('andor', 'Column selection should be applied with logic: ', c('AND', 'OR'),
                                      'AND')),
       stableColumnLayout(
@@ -53,7 +56,7 @@ viewenhanceAddin<- function() {
         #this checks if the subset argument works, and updates the message if it does not
         condition <- try(parse(text = input$subset), silent = TRUE)
         tryme <- try({
-          call <- as.call(list(as.name("subset.data.frame"),data,condition))
+          call <- as.call(list(as.name("subset.data.frame"), data, condition))
           eval(call, envir = .GlobalEnv)
         },
         silent = TRUE)
@@ -68,8 +71,8 @@ viewenhanceAddin<- function() {
 
       #look to see if the user has set up restrictions for the column names
 
-      if(nzchar(input$starts)| nzchar(input$ends) | nzchar(input$contains) | !is.null(input$columns))
-      {
+      if(nzchar(input$starts)| nzchar(input$ends) |
+         nzchar(input$contains) | !is.null(input$columns)){
 
         #condition will be built up from the different user inputs
         #with & or | depending on user input
@@ -176,13 +179,12 @@ viewenhanceAddin<- function() {
     #data view in shiny environment
     output$output <- renderDataTable({
       data <- eval(parse(text=codestatement()$code), envir = .GlobalEnv)
+     # data<-data.frame(rnorm(10))
       if (isErrorMessage(data))
         return(data.frame(x = c('Failure. Code string is ',
                                 codestatement()$code)))
       N <- min(input$colno, dim(data)[2])
       data[,seq(1,N)]
-
-      data
 
 
     })
@@ -196,13 +198,27 @@ viewenhanceAddin<- function() {
 
     #get the available columns from the chosen data source
 
-    output$colselect <- renderUI({
-      dataString <- input$data
-      data <- data.frame(get(dataString, envir = .GlobalEnv))
-      namelist <- names(data)
-      selectInput("columns", "Choose columns", sort(namelist), selected = input$columns, multiple = TRUE,
-                  selectize = TRUE, width = "100%", size = NULL)
-    })
+   observe({
+      updateSelectizeInput(session = session,
+                           inputId = 'columns',
+                           choices = {dataString <- input$data
+                           data <- data.frame(get(dataString, envir = .GlobalEnv))
+                           namelist <- names(data)
+                           sort(namelist)
+                             },
+                           server = TRUE)
+   })
+
+
+
+    # output$colselect <- renderUI({
+    #   dataString <- input$data
+    #   data <- data.frame(get(dataString, envir = .GlobalEnv))
+    #   namelist <- names(data)
+    #   namelist <- 'trythis!'
+    #   selectInput("columns", "Choose columns", sort(namelist), selected = input$columns, multiple = TRUE,
+    #               selectize = TRUE, width = "100%", size = NULL)
+    # })
 
   }
 
