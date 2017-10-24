@@ -10,20 +10,20 @@ viewenhanceAddin<- function(datain = NULL) {
 
   if (!is.null(datain)){
     if (is.data.frame(datain)){
-    datalist <- deparse(substitute(datain))
+      datalist <- deparse(substitute(datain))
     }else{
       stop("datain needs to be a data frame")
     }
   }else{
-  #Check which objects in the name space have a dimension. If the environment is empty, return said error
-  datalist <- tryCatch({
-    ls(envir = .GlobalEnv)[unlist(lapply(mget(ls(envir = .GlobalEnv), envir = .GlobalEnv) , is.data.frame))]},
-    error = function(e) stop("There are no data frames in the global environment!"))
-  #if there are no dimensional objects, error
-  if (length(datalist) == 0)
-  {
-    stop("The global environment does not include any objects with dimensions!")
-  }
+    #Check which objects in the name space have a dimension. If the environment is empty, return said error
+    datalist <- tryCatch({
+      ls(envir = .GlobalEnv)[unlist(lapply(mget(ls(envir = .GlobalEnv), envir = .GlobalEnv) , is.data.frame))]},
+      error = function(e) stop("There are no data frames in the global environment!"))
+    #if there are no dimensional objects, error
+    if (length(datalist) == 0)
+    {
+      stop("The global environment does not include any objects with dimensions!")
+    }
   }
 
   # Generate UI for the gadget.
@@ -35,10 +35,21 @@ viewenhanceAddin<- function(datain = NULL) {
         textInput("subset", "Subset Expression"),
         textOutput('message'),
         selectInput('labelorname', 'Select name or label', c('Name', 'Label'))),
+      stableColumnLayout(
+        selectizeInput(inputId = "columns_filter", label = "Choose a  column to filter on (note, only names can be used for this)",
+                       choices = NULL, multiple = FALSE,
+                       selected = NULL),
+        selectizeInput(inputId = "Selection_type", label = "Choose how to filter",
+                       choices = NULL, multiple = FALSE,
+                       selected = NULL),
+        uiOutput('Select_value')),
+      stableColumnLayout(actionButton('insertBtn', 'Add filter'),
+                         actionButton('removeBtn', 'Remove filter'),
+                         tags$div('Filters are:' ,id = 'placeholder')),
       stableColumnLayout(selectizeInput(inputId = "columns", label = "Choose columns",
-                                       choices = NULL, multiple = TRUE,
-                                       selected = NULL,
-                                            width = "100%", size = NULL)),
+                                        choices = NULL, multiple = TRUE,
+                                        selected = NULL,
+                                        width = "100%", size = NULL)),
       stableColumnLayout(selectInput('andor', 'Column selection should be applied with logic: ', c('AND', 'OR'),
                                      'AND')),
       stableColumnLayout(
@@ -55,21 +66,54 @@ viewenhanceAddin<- function(datain = NULL) {
 
   # Server code for the gadget.
   server <- function(input, output, session) {
-
+    inserted <- c()
+    filtered <- reactiveValues(filtered = c())
+    observeEvent(input$insertBtn, {
+      btn <- input$insertBtn
+      id <- paste0('txt', btn)
+      values <- input$selected_value
+      N <- length (values)
+      if (N>=4){
+        values[4] <- '...'
+      }
+      if(N>1){
+        M <- min(4, N)
+        values <- paste(values[1:M], collapse =',')
+        values <- paste0('(', values, ')')
+      }
+      insertUI(
+        selector = '#placeholder',
+        ## wrap element in a div with id for ease of removal
+        ui = tags$div(
+          tags$p(paste0(input$columns_filter,' ', input$Selection_type,' ', values)),
+          id = id
+        )
+      )
+      inserted <<- c(id, inserted)
+      filtered$filtered <- c(paste0(input$columns_filter,' ', input$Selection_type,' ',
+                                    input$selected_value),
+                             filtered$filtered)
+    })
     #this generates the code from user inputs
     codestatement <- reactive({
       if(!is.null(datain)){
         data <- datain
       }else{
-      data <- data.frame(get(input$data, envir = .GlobalEnv) )
+        data <- data.frame(get(input$data, envir = .GlobalEnv) )
       }
       datnames <- names_label(data)
       code <- paste0("viewenhance::subset_lab(",input$data)
 
-      if (nzchar(input$subset))
+      if (nzchar(input$subset)| length(filtered$filtered>0))
       {
+        if  (nzchar(input$subset)){
+          subset_con <- paste(c(input$subset, filtered$filtered), collapse = '&')
+        }else{
+          subset_con <- paste(c(filtered$filtered), collapse = '&')
+        }
+
         #this checks if the subset argument works, and updates the message if it does not
-        condition <- try(parse(text = input$subset), silent = TRUE)
+        condition <- try(parse(text = subset_con), silent = TRUE)
         tryme <- try({
           call <- as.call(list(as.name("subset.data.frame"), data, condition))
           eval(call, envir = .GlobalEnv)
@@ -81,7 +125,7 @@ viewenhanceAddin<- function(datain = NULL) {
           output$message <- renderText('Error in subset expression')
         }else{
           output$message <- renderText('Subset expression accepted')
-          code <- paste0(code, ",subset = ",  input$subset)}
+          code <- paste0(code, ",subset = ",  subset_con)}
       }
 
       #look to see if the user has set up restrictions for the column names
@@ -207,9 +251,9 @@ viewenhanceAddin<- function(datain = NULL) {
                                 codestatement()$code)))
       N <- min(input$colno, dim(data)[2])
       if (N>0){
-      datout <- data[,seq(1,N), drop = FALSE]
-      names(datout) <- names_label(datout, input$labelorname)
-      datout
+        datout <- data[,seq(1,N), drop = FALSE]
+        names(datout) <- names_label(datout, input$labelorname)
+        datout
       }else
       {
         data
@@ -226,20 +270,88 @@ viewenhanceAddin<- function(datain = NULL) {
 
     #get the available columns from the chosen data source
 
-   observe({
+    observe({
+      dataString <- input$data
+      if(!is.null(datain)){
+        data <- datain
+      }else{
+        data <- data.frame(get(dataString, envir = .GlobalEnv))
+      }
+      namelist <- names_label(data,input$labelorname)
+      outlist <- sort(namelist)
       updateSelectizeInput(session = session,
                            inputId = 'columns',
-                           choices = {dataString <- input$data
-                           if(!is.null(datain)){
-                             data <- datain
-                           }else{
-                           data <- data.frame(get(dataString, envir = .GlobalEnv))
-                           }
-                           namelist <- names_label(data,input$labelorname)
-                           sort(namelist)
-                             },
+                           choices = outlist ,
                            server = TRUE)
-   })
+
+
+    })
+    observe({
+      dataString <- input$data
+      if(!is.null(datain)){
+        data <- datain
+      }else{
+        data <- data.frame(get(dataString, envir = .GlobalEnv))
+      }
+      namelist <- names(data)
+      outlist <- sort(namelist)
+      updateSelectizeInput(session = session,
+                           inputId = 'columns_filter',
+                           choices = outlist ,
+                           server = TRUE)
+    })
+    observe({
+      dataString <- input$data
+      if(!is.null(datain)){
+        data <- datain
+      }else{
+        data <- data.frame(get(dataString, envir = .GlobalEnv))
+      }
+      if (is.character(data[[input$columns_filter]])|is.factor(data[[input$columns_filter]])){
+        selectlist <- c('==', '!=', '%in%', '%not in%')
+      }else{
+        selectlist <- c('<', '<=', '==','!=', '>=', '>', '%in%', '%not in%')
+      }
+
+      updateSelectizeInput(session = session,
+                           inputId = 'Selection_type',
+                           choices = selectlist ,
+                           selected = '=',
+                           server = TRUE)
+    })
+
+    output$Select_value <- renderUI({
+      dataString <- input$data
+      if(!is.null(datain)){
+        data <- datain
+      }else{
+        data <- data.frame(get(dataString, envir = .GlobalEnv))
+      }
+      values <- unique(data[[input$columns_filter]])
+      if (is.character(values) | is.factor(values)){
+        values <- paste0("'", values, "'")
+      }
+      if (input$Selection_type %in% c('%in%', '%not in%')){
+        selectInput('selected_value','Select values to filter on', values,
+                    multiple = TRUE)
+      }else{
+        selectInput('selected_value','Select values to filter on', values,
+                    multiple = FALSE)
+      }
+    })
+
+
+
+
+
+    observeEvent(input$removeBtn, {
+      removeUI(
+        ## pass in appropriate div id
+        selector = paste0('#', inserted[1])
+      )
+      inserted <<- inserted[-1]
+      filtered$filtered <- filtered$filtered[-1]
+    })
 
 
 
