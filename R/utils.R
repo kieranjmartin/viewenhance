@@ -22,6 +22,15 @@ errorMessage <- function(type, message) {
   )
 }
 
-
+attr_getter <- function(column){
+  attr(column, 'label')
+}
+nullreplacer <- function(value, newname){
+  if(is.null(value)){
+    newname
+  }else{
+    value
+  }
+}
 
 

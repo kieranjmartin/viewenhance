@@ -189,10 +189,8 @@ viewenhanceAddin<- function(datain = NULL) {
         }
 
         #finally append the condition to the code statement
-        codesave <- paste0(code, ", ","select = names_label(",input$data,",'",
-                           input$labelorname,"')[",condsave,"])")
-        code <- paste0(code, ", ","select = names_label(",input$data,",'",
-                       input$labelorname,"')[",cond,"])")
+        codesave <- paste0(code, ", ","select = ",condsave,")")
+        code <- paste0(code, ", ","select = ",cond,")")
         return(list(code=code,codesave=codesave))
       }else{
         code <- paste0(code,')')
@@ -208,8 +206,14 @@ viewenhanceAddin<- function(datain = NULL) {
         return(data.frame(x = c('Failure. Code string is ',
                                 codestatement()$code)))
       N <- min(input$colno, dim(data)[2])
-      data[,seq(1,N)]
-
+      if (N>0){
+      datout <- data[,seq(1,N), drop = FALSE]
+      names(datout) <- names_label(datout, input$labelorname)
+      datout
+      }else
+      {
+        data
+      }
 
     })
 
