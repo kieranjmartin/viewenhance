@@ -33,7 +33,8 @@ viewenhanceAddin<- function(datain = NULL) {
       stableColumnLayout(
         selectInput('data','Select data frame', datalist),
         textInput("subset", "Subset Expression"),
-        textOutput('message')),
+        textOutput('message'),
+        selectInput('labelorname', 'Select name or label', c('Name', 'Label'))),
       stableColumnLayout(selectizeInput(inputId = "columns", label = "Choose columns",
                                        choices = NULL, multiple = TRUE,
                                        selected = NULL,
@@ -62,7 +63,7 @@ viewenhanceAddin<- function(datain = NULL) {
       }else{
       data <- data.frame(get(input$data, envir = .GlobalEnv) )
       }
-      datnames <- names(data)
+      datnames <- names_label(data)
       code <- paste0("viewenhance::subset_lab(",input$data)
 
       if (nzchar(input$subset))
@@ -112,9 +113,11 @@ viewenhanceAddin<- function(datain = NULL) {
           for (term in startvect){
             j<-j+1
             eterm<-ifelse(substr(term,1,1) =='-',
-                          paste0("!startsWith(names(",input$data,"),'",
+                          paste0("!startsWith(names_label(",input$data,",'",
+                                 input$labelorname,"'),'",
                                  substr(term,2,nchar(term)),"')"),
-                          paste0("startsWith(names(",input$data,"),'",term,"')"))
+                          paste0("startsWith(names_label(",input$data,",'",
+                                 input$labelorname,"'),'",term,"')"))
             scond <- ifelse(scond=='',eterm,
                             paste0(scond,schar[j-1],eterm))
           }
@@ -136,9 +139,11 @@ viewenhanceAddin<- function(datain = NULL) {
           for (term in endvect){
             j<- j + 1
             eterm<-ifelse(substr(term,1,1) =='-',
-                          paste0("!endsWith(names(",input$data,"),'",
+                          paste0("!endsWith(names_label(",input$data,",'",
+                                 input$labelorname,"'),'",
                                  substr(term,2,nchar(term)),"')"),
-                          paste0("endsWith(names(",input$data,"),'",term,"')"))
+                          paste0("endsWith(names_label(",input$data,",'",
+                                 input$labelorname,"'),'",term,"')"))
             econd <- ifelse(econd=='',eterm,
                             paste0(econd,schar[j-1],eterm))
           }
@@ -162,8 +167,11 @@ viewenhanceAddin<- function(datain = NULL) {
           for (term in convect){
             j<- j + 1
             eterm<-ifelse(substr(term,1,1) =='-',
-                          paste0("!grepl('",substr(term,2,nchar(term)),"',names(",input$data,"))"),
-                          paste0("grepl('",term,"',names(",input$data,"))"))
+                          paste0("!grepl('",substr(term,2,nchar(term)),
+                                 "',names_label(",input$data,",'",
+                                 input$labelorname, "'))"),
+                          paste0("grepl('",term,"',names_label(",input$data,",'",
+                                 input$labelorname,"'))"))
             ccond <- ifelse(ccond=='',eterm,
                             paste0(ccond,schar[j-1],eterm))
           }
@@ -174,14 +182,17 @@ viewenhanceAddin<- function(datain = NULL) {
 
         condsave <- ifelse(cond=='',T,cond)
         if(!is.null(input$columns)){
-          eterm <- paste0("names(",input$data,")%in%c('",paste(input$columns, collapse = "','"),"')")
+          eterm <- paste0("names_label(",input$data,",'",
+                          input$labelorname,"')%in%c('",paste(input$columns, collapse = "','"),"')")
           cond <- ifelse(cond=='',eterm,
                          paste0(cond,jointerm,eterm))
         }
 
         #finally append the condition to the code statement
-        codesave <- paste0(code, ", ","select = names(",input$data,")[",condsave,"])")
-        code <- paste0(code, ", ","select = names(",input$data,")[",cond,"])")
+        codesave <- paste0(code, ", ","select = names_label(",input$data,",'",
+                           input$labelorname,"')[",condsave,"])")
+        code <- paste0(code, ", ","select = names_label(",input$data,",'",
+                       input$labelorname,"')[",cond,"])")
         return(list(code=code,codesave=codesave))
       }else{
         code <- paste0(code,')')
@@ -220,7 +231,7 @@ viewenhanceAddin<- function(datain = NULL) {
                            }else{
                            data <- data.frame(get(dataString, envir = .GlobalEnv))
                            }
-                           namelist <- names(data)
+                           namelist <- names_label(data,input$labelorname)
                            sort(namelist)
                              },
                            server = TRUE)
@@ -228,14 +239,7 @@ viewenhanceAddin<- function(datain = NULL) {
 
 
 
-    # output$colselect <- renderUI({
-    #   dataString <- input$data
-    #   data <- data.frame(get(dataString, envir = .GlobalEnv))
-    #   namelist <- names(data)
-    #   namelist <- 'trythis!'
-    #   selectInput("columns", "Choose columns", sort(namelist), selected = input$columns, multiple = TRUE,
-    #               selectize = TRUE, width = "100%", size = NULL)
-    # })
+
 
   }
 
