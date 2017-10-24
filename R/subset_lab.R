@@ -34,6 +34,7 @@ subset_lab <- function(x, ..., col_lim = 1000){
     outdat <- subset(data.frame(x), ...)
   }
   N_att <- min(length(names(attsave)[names(attsave) %in% names(outdat)]), col_lim)
+
   if (N_att>0){
     names_replace <- names(outdat)[1:N_att]
   for (att in names_replace){
