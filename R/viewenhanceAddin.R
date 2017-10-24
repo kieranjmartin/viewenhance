@@ -2,7 +2,7 @@
 #' @export
 #' @import shiny
 #' @import miniUI
-#' @param datain Provide a data frame to explore
+#' @param datain Provide a data frame or a list of data frames to explore
 #' @return A shiny box, which, when options are chosen, will put a View command into the console
 
 viewenhanceAddin<- function(datain = NULL) {
@@ -11,8 +11,16 @@ viewenhanceAddin<- function(datain = NULL) {
   if (!is.null(datain)){
     if (is.data.frame(datain)){
       datalist <- deparse(substitute(datain))
+      list_true = FALSE
+    }else if (is.list(datain)){
+      datframes <- datain[unlist(Map(is.data.frame, datain))]
+      if (length(datframes) == 0){
+        stop("None of the objects in the inputted list are data frames")
+      }
+      list_true = TRUE
+      datalist <- paste0(deparse(substitute(datain)),'$', names(datframes))
     }else{
-      stop("datain needs to be a data frame")
+      stop("datain needs to be a data frame or a list containing data frames")
     }
   }else{
     #Check which objects in the name space have a dimension. If the environment is empty, return said error
@@ -29,39 +37,65 @@ viewenhanceAddin<- function(datain = NULL) {
   # Generate UI for the gadget.
   ui <- miniPage(
     gadgetTitleBar("Subset and select columns for a data.frame"),
-    miniContentPanel(
-      stableColumnLayout(
-        selectInput('data','Select data frame', datalist),
-        textInput("subset", "Subset Expression"),
-        textOutput('message'),
-        selectInput('labelorname', 'Select name or label', c('Name', 'Label'))),
-      stableColumnLayout(
-        selectizeInput(inputId = "columns_filter", label = "Choose a  column to filter on (note, only names can be used for this)",
-                       choices = NULL, multiple = FALSE,
-                       selected = NULL),
-        selectizeInput(inputId = "Selection_type", label = "Choose how to filter",
-                       choices = NULL, multiple = FALSE,
-                       selected = NULL),
-        uiOutput('Select_value')),
-      stableColumnLayout(actionButton('insertBtn', 'Add filter'),
-                         actionButton('removeBtn', 'Remove filter'),
-                         tags$div('Filters are:' ,id = 'placeholder')),
-      stableColumnLayout(selectizeInput(inputId = "columns", label = "Choose columns",
-                                        choices = NULL, multiple = TRUE,
-                                        selected = NULL,
-                                        width = "100%", size = NULL)),
-      stableColumnLayout(selectInput('andor', 'Column selection should be applied with logic: ', c('AND', 'OR'),
-                                     'AND')),
-      stableColumnLayout(
-        textInput("starts", "Select columns starting with: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)"),
-        textInput("ends", "Select columns ending with: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)"),
-        textInput("contains", "Select columns containing: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)")
-      ),
-      stableColumnLayout("Table displays current filters/ selections, only first N columns shown\n"),
-      stableColumnLayout(sliderInput('colno', 'Select number of columns shown', 1, 500, 50)),
-      dataTableOutput("output")
-    )
-  )
+    miniTabstripPanel(
+      miniTabPanel("View and select data",
+                   icon = icon("table"),
+                   miniContentPanel(
+                     stableColumnLayout(selectInput('data','Select data frame', datalist),
+                                        selectInput('labelorname',
+                                                    'Display name or label',
+                                                    c('Name', 'Label'))),
+                     stableColumnLayout("Table displays current filters/ selections, only first N columns shown\n"),
+                     stableColumnLayout(sliderInput('colno', 'Select number of columns shown', 1, 500, 50)),
+                     dataTableOutput("output"))),
+      miniTabPanel("Apply filters to the data",
+                   icon = icon("sliders"),
+                   miniContentPanel(textInput("subset", "Manually enter filters"),
+                                    stableColumnLayout(selectizeInput(inputId = "columns_filter",
+                                                                      label = "Choose a  column to filter on",
+                                                                      choices = NULL,
+                                                                      multiple = FALSE,
+                                                                      selected = NULL),
+                                                       selectizeInput(inputId = "Selection_type",
+                                                                      label = "Choose how to filter",
+                                                                      choices = NULL,
+                                                                      multiple = FALSE,
+                                                                      selected = NULL),
+                                                       uiOutput('Select_value')),
+                                    stableColumnLayout(actionButton('insertBtn', 'Add filter'),
+                                                       actionButton('removeBtn', 'Remove filter'),
+                                                       tags$div('Filters are:' ,id = 'placeholder')),
+                                    stableColumnLayout(textOutput('message')))),
+      miniTabPanel("Select columns to view",
+                   icon = icon("sliders"),
+                   miniContentPanel(selectInput('labelorname',
+                                                'Select based on name or label',
+                                                c('Name', 'Label')),
+                                    stableColumnLayout(selectizeInput(inputId = "columns",
+                                                                      label = "Choose columns",
+                                                                      choices = NULL,
+                                                                      multiple = TRUE,
+                                                                      selected = NULL,
+                                                                      width = "100%",
+                                                                      size = NULL)),
+                                    stableColumnLayout(selectInput('andor',
+                                                                   'Column selection should be applied with logic: ',
+                                                                   c('AND', 'OR'),
+                                                                   'AND')),
+                                    stableColumnLayout(
+                                      textInput("starts",
+                                                "Select columns starting with: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)"),
+                                      textInput("ends",
+                                                "Select columns ending with: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)"),
+                                      textInput("contains",
+                                                "Select columns containing: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)")
+                                    )))))
+
+
+
+
+
+
 
 
   # Server code for the gadget.
@@ -97,7 +131,12 @@ viewenhanceAddin<- function(datain = NULL) {
     #this generates the code from user inputs
     codestatement <- reactive({
       if(!is.null(datain)){
-        data <- datain
+        if(list_true){
+          data <- data.frame(get(strsplit(input$data, split="$", fixed=T)[[1]][2]
+                                 , datain) )
+        }else{
+          data <- datain
+        }
       }else{
         data <- data.frame(get(input$data, envir = .GlobalEnv) )
       }
@@ -273,7 +312,12 @@ viewenhanceAddin<- function(datain = NULL) {
     observe({
       dataString <- input$data
       if(!is.null(datain)){
-        data <- datain
+        if(list_true){
+          data <- data.frame(get(strsplit(input$data, split="$", fixed=T)[[1]][2]
+                                 , datain) )
+        }else{
+          data <- datain
+        }
       }else{
         data <- data.frame(get(dataString, envir = .GlobalEnv))
       }
@@ -289,7 +333,12 @@ viewenhanceAddin<- function(datain = NULL) {
     observe({
       dataString <- input$data
       if(!is.null(datain)){
-        data <- datain
+        if(list_true){
+          data <- data.frame(get(strsplit(input$data, split="$", fixed=T)[[1]][2]
+                                 , datain) )
+        }else{
+          data <- datain
+        }
       }else{
         data <- data.frame(get(dataString, envir = .GlobalEnv))
       }
@@ -303,7 +352,12 @@ viewenhanceAddin<- function(datain = NULL) {
     observe({
       dataString <- input$data
       if(!is.null(datain)){
-        data <- datain
+        if(list_true){
+          data <- data.frame(get(strsplit(input$data, split="$", fixed=T)[[1]][2]
+                                 , datain) )
+        }else{
+          data <- datain
+        }
       }else{
         data <- data.frame(get(dataString, envir = .GlobalEnv))
       }
@@ -323,7 +377,12 @@ viewenhanceAddin<- function(datain = NULL) {
     output$Select_value <- renderUI({
       dataString <- input$data
       if(!is.null(datain)){
-        data <- datain
+        if(list_true){
+          data <- data.frame(get(strsplit(input$data, split="$", fixed=T)[[1]][2]
+                                 , datain) )
+        }else{
+          data <- datain
+        }
       }else{
         data <- data.frame(get(dataString, envir = .GlobalEnv))
       }
