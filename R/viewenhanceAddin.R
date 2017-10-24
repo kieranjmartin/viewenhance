@@ -47,7 +47,7 @@ viewenhanceAddin<- function(datain = NULL) {
                                                     c('Name', 'Label'))),
                      stableColumnLayout("Table displays current filters/ selections, only first N columns shown\n"),
                      stableColumnLayout(sliderInput('colno', 'Select number of columns shown', 1, 500, 50)),
-                     dataTableOutput("output"))),
+                     dataTableOutput("t1"))),
       miniTabPanel("Apply filters to the data",
                    icon = icon("sliders"),
                    miniContentPanel(textInput("subset", "Manually enter filters"),
@@ -65,7 +65,9 @@ viewenhanceAddin<- function(datain = NULL) {
                                     stableColumnLayout(actionButton('insertBtn', 'Add filter'),
                                                        actionButton('removeBtn', 'Remove filter'),
                                                        tags$div('Filters are:' ,id = 'placeholder')),
-                                    stableColumnLayout(textOutput('message')))),
+                                    stableColumnLayout(textOutput('message')),
+                                    dataTableOutput("t2")
+                   )),
       miniTabPanel("Select columns to view",
                    icon = icon("sliders"),
                    miniContentPanel(selectInput('labelorname',
@@ -89,7 +91,9 @@ viewenhanceAddin<- function(datain = NULL) {
                                                 "Select columns ending with: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)"),
                                       textInput("contains",
                                                 "Select columns containing: (use & or |  for multiple terms (and/or will then be applied) and - for exclusion)")
-                                    )))))
+                                    ),
+                                    dataTableOutput("t3")
+                   ))))
 
 
 
@@ -161,9 +165,9 @@ viewenhanceAddin<- function(datain = NULL) {
 
 
         if (inherits(tryme, "try-error")){
-          output$message <- renderText('Error in subset expression')
+          output$message <- renderText('Filtering expression is causing an error!')
         }else{
-          output$message <- renderText('Subset expression accepted')
+          output$message <- renderText('Filtering expression accepted')
           code <- paste0(code, ",subset = ",  subset_con)}
       }
 
@@ -281,9 +285,7 @@ viewenhanceAddin<- function(datain = NULL) {
       }
     })
 
-
-    #data view in shiny environment
-    output$output <- renderDataTable({
+    current_data <- reactive({
       data <- eval(parse(text=codestatement()$code), envir = .GlobalEnv)
       if (isErrorMessage(data))
         return(data.frame(x = c('Failure. Code string is ',
@@ -299,6 +301,10 @@ viewenhanceAddin<- function(datain = NULL) {
       }
 
     })
+    #data view in shiny environment
+    output$t1 <- renderDataTable(current_data())
+    output$t2 <- renderDataTable(current_data())
+    output$t3 <- renderDataTable(current_data())
 
     # Listen for 'done'. If so, output the code wrapped in a View() statement into the console
     observeEvent(input$done, {
