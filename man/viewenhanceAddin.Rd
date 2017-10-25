@@ -7,7 +7,7 @@
 viewenhanceAddin(datain = NULL)
 }
 \arguments{
-\item{datain}{Provide a data frame to explore}
+\item{datain}{Provide a data frame or a list of data frames to explore}
 }
 \value{
 A shiny box, which, when options are chosen, will put a View command into the console
