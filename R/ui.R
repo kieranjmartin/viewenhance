@@ -16,7 +16,30 @@ colselecter_text <- function(inval){
 #' @param datain dataframe or list
 #' @param datalist string with names of data frames
 gen_ui <- function(datain, datalist){
+
  miniPage(
+   tags$head(
+     tags$style(HTML("
+    div.filtertitle {
+
+            color: black;
+            font-size: 200%
+            font-weight: bold;
+            background-color: Azure ;
+
+
+
+             }
+    div.filters {
+
+            color: black;
+            text-align: center;
+            background-color: Azure ;
+
+
+
+             }
+                     "))),
   gadgetTitleBar("Subset and select columns for a data.frame"),
   miniTabstripPanel(
     miniTabPanel("View and select data",
@@ -35,7 +58,9 @@ gen_ui <- function(datain, datalist){
     miniTabPanel("Apply filters to the data",
                  icon = icon("sliders"),
                  miniContentPanel(
-                   textInput("subset", "Manually enter filters"),
+                   stableColumnLayout(
+                     textInput("subset", "Manually enter filters"),
+                     div((textOutput("message")), class = 'filters')),
                    stableColumnLayout(
                      selectizeInput(
                        inputId = "columns_filter",
@@ -52,10 +77,9 @@ gen_ui <- function(datain, datalist){
                    stableColumnLayout(
                      actionButton('insertBtn', 'Add filter'),
                      actionButton('removeBtn', 'Remove filter'),
-                     tags$div('Filters are:' ,id = 'placeholder')),
-                   stableColumnLayout(
-                     textOutput('message')),
-                     dataTableOutput("t2"))),
+                     tags$body(tags$b('Filters Added:'),
+                               (tags$div( id = 'placeholder', class = 'filters')))),
+                   dataTableOutput("t2"))),
     miniTabPanel("Select columns to view",
                  icon = icon("sliders"),
                  miniContentPanel(

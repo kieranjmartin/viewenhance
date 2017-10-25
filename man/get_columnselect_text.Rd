@@ -4,7 +4,8 @@
 \alias{get_columnselect_text}
 \title{Column text selector}
 \usage{
-get_columnselect_text(expression, intext, labelorname, dataname)
+get_columnselect_text(expression, intext, labelorname, dataname,
+  contains = FALSE)
 }
 \description{
 Handles the text string given by user for starts with/ ends with/ contains
