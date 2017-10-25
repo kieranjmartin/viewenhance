@@ -1,4 +1,7 @@
 #' Server code for the gadget.
+#' @param input inputs to the server
+#' @param output outputs from server
+#' @param session session server is operating on
 server_in <- function(input, output, session) {
 
   #set up some values which will be updated over time

@@ -14,9 +14,11 @@ names_label <- function(datain, label_name = 'Name'){
   }
   if (label_name == 'Name'){
     names(datain)
-  }else{
+  }else if (label_name == 'Label'){
     attsout <- Map(attr_getter, datain)
     attsout <- Map(nullreplacer, attsout, names(datain))
     as.character(unlist(attsout))
+  }else{
+      stop('label_name should be Label or Name')
     }
 }

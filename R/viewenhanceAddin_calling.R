@@ -39,6 +39,11 @@ datacheck <- function(datain)
 #'
 #' Handles the text string given by user for starts with/ ends with/ contains
 #'
+#'@param expression what function is being checked
+#'@param intext the text to search over
+#'@param labelorname the input value, label or name
+#'@param dataname name of data frame
+#'@param contains if expression is contains, this is TRUE
 get_columnselect_text <- function(expression, intext,
                                   labelorname, dataname,
                                   contains = FALSE){
