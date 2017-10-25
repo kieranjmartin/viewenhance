@@ -18,7 +18,7 @@ viewenhanceAddin<- function(datain = NULL) {
   # Use a modal dialog as a viewr.
   viewer <- dialogViewer("Subset", width = 1000, height = 800)
   #note we suppress messages. We remove this when debugging :)
-  #suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
-  runGadget(ui, server, viewer = viewer)
+  suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
+  #runGadget(ui, server, viewer = viewer)
 
 }
