@@ -83,9 +83,6 @@ gen_ui <- function(datain, datalist){
     miniTabPanel("Select columns to view",
                  icon = icon("sliders"),
                  miniContentPanel(
-                   selectInput('labelorname',
-                               'Select based on name or label',
-                               choices = c('Name', 'Label')),
                    stableColumnLayout(selectizeInput(
                      inputId = "columns",
                      label = "Choose columns",
