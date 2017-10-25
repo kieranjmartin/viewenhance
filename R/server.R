@@ -36,12 +36,23 @@ server_in <- function(input, output, session) {
     )
     #store values in filtered
     inserted <<- c(id, inserted)
+    if (input$Selection_type %in% c('%in%', '%not in%'))
+    {
+      selectedvalues <- paste(input$selected_value, collapse =',')
     filtered$filtered <- c(paste0(input$columns_filter,
                                   ' ',
                                   input$Selection_type,
-                                  ' ',
-                                  input$selected_value),
+                                  ' c(',
+                                  selectedvalues,')'),
                            filtered$filtered)
+    }else{
+      filtered$filtered <- c(paste0(input$columns_filter,
+                                    ' ',
+                                    input$Selection_type,
+                                    ' ',
+                                    input$selected_value),
+                             filtered$filtered)
+    }
   })
   #remove filters
 
@@ -93,7 +104,9 @@ server_in <- function(input, output, session) {
 
 
       if (inherits(tryme, "try-error")){
-        output$message <- renderText('Filtering expression is causing an error!')
+        output$message <- renderText(paste0('Filtering expression is causing an error!',
+                                     'Currently this is ',
+                                     subset_con))
       }else{
         output$message <- renderText('Filtering expression accepted')
         code <- paste0(code, ",subset = ",  subset_con)}
