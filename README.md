@@ -37,7 +37,7 @@ attr(X$y, 'label') <- 'label for y'
 ```
 
 
-![Screen shot of view enhance](images/landing_select.png.png)
+![Screen shot of view enhance](images/landing_select.png)
 
 This shows the first tab, which can be browsed through the buttons below. Here you can select which data frame to view, and whether to view the column names or their labels. If you move to the filters tab, you see the following.
 
