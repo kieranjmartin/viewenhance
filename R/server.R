@@ -43,6 +43,16 @@ server_in <- function(input, output, session) {
                                   input$selected_value),
                            filtered$filtered)
   })
+  #remove filters
+
+  observeEvent(input$removeBtn, {
+    removeUI(
+      ## pass in appropriate div id
+      selector = paste0('#', inserted[1])
+    )
+    inserted <<- inserted[-1]
+    filtered$filtered <- filtered$filtered[-1]
+  })
 
   #this generates the code from user inputs
   codestatement <- reactive({
@@ -154,7 +164,7 @@ server_in <- function(input, output, session) {
       return(list(code=code,codesave=code))
     }
   })
-
+  #get data based on current conditions
   current_data <- reactive({
     data <- eval(parse(text=codestatement()$code), envir = .GlobalEnv)
     if (isErrorMessage(data))
@@ -176,11 +186,6 @@ server_in <- function(input, output, session) {
   output$t2 <- renderDataTable(current_data())
   output$t3 <- renderDataTable(current_data())
 
-  # Listen for 'done'. If so, output the code wrapped in a View() statement into the console
-  observeEvent(input$done, {
-    rstudioapi::sendToConsole(paste0('View(',codestatement()$code,')'))
-    invisible(stopApp())
-  })
 
 
   #get the available columns from the chosen data source
@@ -206,6 +211,9 @@ server_in <- function(input, output, session) {
 
 
   })
+
+  #update columns to filter on based on current data selection
+
   observe({
     dataString <- input$data
     if(!is.null(datain)){
@@ -225,6 +233,9 @@ server_in <- function(input, output, session) {
                          choices = outlist ,
                          server = TRUE)
   })
+
+  #get seleciton value based on whether data is character or numeric
+
   observe({
     dataString <- input$data
     if(!is.null(datain)){
@@ -249,6 +260,8 @@ server_in <- function(input, output, session) {
                          selected = '=',
                          server = TRUE)
   })
+
+  #get list of unique values from selected column
 
   output$Select_value <- renderUI({
     dataString <- input$data
@@ -277,19 +290,11 @@ server_in <- function(input, output, session) {
 
 
 
-
-
-  observeEvent(input$removeBtn, {
-    removeUI(
-      ## pass in appropriate div id
-      selector = paste0('#', inserted[1])
-    )
-    inserted <<- inserted[-1]
-    filtered$filtered <- filtered$filtered[-1]
+  # Listen for 'done'. If so, output the code wrapped in a View() statement into the console
+  observeEvent(input$done, {
+    rstudioapi::sendToConsole(paste0('View(',codestatement()$code,')'))
+    invisible(stopApp())
   })
-
-
-
 
 
 }
