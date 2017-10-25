@@ -6,6 +6,13 @@
 \usage{
 server_in(input, output, session)
 }
+\arguments{
+\item{input}{inputs to the server}
+
+\item{output}{outputs from server}
+
+\item{session}{session server is operating on}
+}
 \description{
 Server code for the gadget.
 }
