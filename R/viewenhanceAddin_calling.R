@@ -10,18 +10,19 @@ datacheck <- function(datain)
   if (!is.null(datain)){
     if (is.data.frame(datain)){
       datalist <- deparse(substitute(datain))
-      list_true = FALSE
+      list_true <- FALSE
     }else if (is.list(datain)){
       datframes <- datain[unlist(Map(is.data.frame, datain))]
       if (length(datframes) == 0){
         stop("None of the objects in the inputted list are data frames")
       }
-      list_true = TRUE
+      list_true <- TRUE
       datalist <- paste0(deparse(substitute(datain)),'$', names(datframes))
     }else{
       stop("datain needs to be a data frame or a list containing data frames")
     }
   }else{
+      list_true = TRUE
     #Check which objects in the name space have a dimension. If the environment is empty, return said error
     datalist <- tryCatch({
       ls(envir = .GlobalEnv)[unlist(lapply(mget(ls(envir = .GlobalEnv), envir = .GlobalEnv) , is.data.frame))]},
@@ -32,7 +33,7 @@ datacheck <- function(datain)
       stop("The global environment does not include any objects with dimensions!")
     }
   }
-  datalist
+  return(list(datalist = datalist, list_true = list_true))
 }
 
 #' Column text selector
