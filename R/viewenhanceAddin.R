@@ -9,16 +9,28 @@ viewenhanceAddin<- function(datain = NULL) {
 
 
     if (!is.null(datain)){
-        if (is.data.frame(datain)){
+        if(is.character(datain)){
+            datalist <- datain
+            datain   <- tryCatch({get(datain, envir = .GlobalEnv)},
+                                 error = function(e){stop(paste0("Provided data frame name ",
+                                                                 datain,
+                                                                 " does not exist in global enviornment"))})
+            list_true <- FALSE
+        }
+        else if (is.data.frame(datain)){
+
             datalist <- deparse(substitute(datain))
             list_true <- FALSE
+
         }else if (is.list(datain)){
+
             datframes <- datain[unlist(Map(is.data.frame, datain))]
             if (length(datframes) == 0){
                 stop("None of the objects in the inputted list are data frames")
             }
             list_true <- TRUE
             datalist <- paste0(deparse(substitute(datain)),'$', names(datframes))
+
         }else{
             stop("datain needs to be a data frame or a list containing data frames")
         }
@@ -35,15 +47,15 @@ viewenhanceAddin<- function(datain = NULL) {
         }
     }
 
-  ui <- gen_ui(datain, datalist)
-  server <- server_in
-  environment(server) <- environment()
+    ui <- gen_ui(datain, datalist)
+    server <- server_in
+    environment(server) <- environment()
 
 
-  # Use a modal dialog as a viewr.
-  viewer <- dialogViewer("Subset", width = 1000, height = 800)
-  #note we suppress messages. We remove this when debugging :)
-  #suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
-  runGadget(ui, server, viewer = viewer)
+    # Use a modal dialog as a viewr.
+    viewer <- dialogViewer("Subset", width = 1000, height = 800)
+    #note we suppress messages. We remove this when debugging :)
+    #suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
+    runGadget(ui, server, viewer = viewer)
 
 }

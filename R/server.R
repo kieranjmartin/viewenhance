@@ -308,7 +308,7 @@ server_in <- function(input, output, session) {
 
   # Listen for 'done'. If so, output the code wrapped in a View() statement into the console
   observeEvent(input$done, {
-    rstudioapi::sendToConsole(paste0('View(',codestatement()$code,')'))
+    rstudioapi::sendToConsole(paste0('View(',codestatement()$code,', replace = FALSE)'))
     invisible(stopApp())
   })
 
