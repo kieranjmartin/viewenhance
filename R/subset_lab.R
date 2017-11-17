@@ -1,5 +1,6 @@
 #' Subset data and save attributes.
-#' Subset data and save attributes.
+#'
+#' Note that this function is only designed to handle data frames
 #' Note that for large data sets this will take a long time,
 #' so by default this is only reapplied for the first 1000 columns
 #' @export
@@ -12,8 +13,6 @@
 #' subset_lab(airquality, Temp > 80, select = c(Ozone, Temp))
 #' subset_lab(airquality, Day == 1, select = -Temp)
 #' subset_lab(airquality, select = Ozone:Wind)
-#'
-#' with(airquality, subset(Ozone, Temp > 80))
 #'
 #' ## sometimes requiring a logical 'subset' argument is a nuisance
 #' nm <- rownames(state.x77)
@@ -29,6 +28,7 @@ subset_lab <- function(x, ..., col_lim = 1000){
     attsave <- lapply(x, attributes)
     outdat <-subset(x, ...  )
   }else{
+      warning('Object coerced to a data frame!')
     x<-data.frame(x)
     attsave <- lapply(x, attributes)
     outdat <- subset(data.frame(x), ...)
