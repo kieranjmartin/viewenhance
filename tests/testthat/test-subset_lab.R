@@ -7,9 +7,9 @@ test_that('subset examples work identically for both',{
 expect_equal(subset_lab(airquality, Temp > 80, select = c(Ozone, Temp)),
              subset(airquality, Temp > 80, select = c(Ozone, Temp)))
 expect_equal(subset_lab(airquality, Day == 1, select = -Temp),
-             subet(airquality, Day == 1, select = -Temp))
+             subset(airquality, Day == 1, select = -Temp))
 expect_equal(subset_lab(airquality, select = Ozone:Wind),
-             subet(airquality, select = Ozone:Wind))
+             subset(airquality, select = Ozone:Wind))
 
 })
 
