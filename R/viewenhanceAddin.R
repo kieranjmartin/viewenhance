@@ -48,7 +48,7 @@ viewenhanceAddin<- function(datain = NULL) {
     }
 
     ui <- gen_ui(datain, datalist)
-    server <- server_in
+    server <- server_in(datain, list_true)
     environment(server) <- environment()
 
 
