@@ -1,8 +1,8 @@
 #' Server code for the gadget.
-#' @param input inputs to the server
-#' @param output outputs from server
-#' @param session session server is operating on
-server_in <- function(input, output, session) {
+#' @param datain data entered
+#' @param list_true whether list_true is true or not
+server_in <- function(datain, list_true){
+server <- function(input, output, session) {
 
   #set up some values which will be updated over time
   inserted <- c()
@@ -314,3 +314,6 @@ server_in <- function(input, output, session) {
 
 
 }
+server
+}
+

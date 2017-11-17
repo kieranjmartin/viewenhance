@@ -4,14 +4,12 @@
 \alias{server_in}
 \title{Server code for the gadget.}
 \usage{
-server_in(input, output, session)
+server_in(datain, list_true)
 }
 \arguments{
-\item{input}{inputs to the server}
+\item{datain}{data entered}
 
-\item{output}{outputs from server}
-
-\item{session}{session server is operating on}
+\item{list_true}{whether list_true is true or not}
 }
 \description{
 Server code for the gadget.
