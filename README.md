@@ -11,19 +11,20 @@ This intended to be a quick look at your data rather than an in depth analysis t
 
 Please note that this is a work in progress, so any bugs spotted please let me know!
 
-## Using the tool
+## Getting started
 
-To enable this tool, you will need to install the library. You can do this using devtools. Install this package if you haven't already, then use
+To enable this tool, you will need to install the library. You can do this using devtools, as follows:
 
-library(devtools)
+    library(devtools)
+    install_github("martik32/viewenhance", host = "github.roche.com/api/v3")
+    
+Then, load the library:
 
-install_github("martik32/viewenhance", host = "github.roche.com/api/v3")
+    library(viewenhance)
 
-library(viewenhance)
+This will add an "add in" to the `Addins` menu (top of RStudio) called "Enchanced View". You can either select this or run `viewenhance:::viewenhanceAddin()` in your console.
 
-This will add an "add in" to the add in menu called "Enchanced View". You can either select this or run viewenhance:::viewenhanceAddin() in your console.
-
-You can also use viewenhance:::viewenhanceAddin(data_frame) or viewenhance:::viewenhanceAddin(list) with either a data frame or a list of data frames, and the app will use those as inputs instead. 
+You can also use `viewenhance:::viewenhanceAddin(data_frame)` or `viewenhance:::viewenhanceAddin(list)` with either a data frame or a list of data frames, and the app will use those as inputs instead. 
 
 Note that this function will error if there are no data frames/matrices in your global environment. For an example, run the following code
 
