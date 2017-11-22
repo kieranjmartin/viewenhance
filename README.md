@@ -46,7 +46,7 @@ This shows the first tab, which can be browsed through the buttons below. Here y
 
 ![Screen shot of view enhance](images/multiplefilters.png)
 
-You can enter filters through three text, and also through the drop down boxes. When adding filters via the drop down box, you need to click the "add filters" button, and "remove filters" to then remove those.
+You can enter filters through free text, and also through the drop down boxes. When adding filters via the drop down box, you need to click the "add filters" button, and "remove filters" to then remove those.
 
 Finally you can select columns.
 
