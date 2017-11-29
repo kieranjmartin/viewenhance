@@ -1,5 +1,3 @@
-# Please note that this version is no longer maintained! Go to https://github.roche.com/Rpackages/viewenhance for the most up to date version!
-
 
 ## Introduction 
 This package produces an add in for r studio to help browse data.
