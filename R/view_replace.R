@@ -16,15 +16,18 @@ View <- function(datain, replace = T){
             all_names <- ls(envir = .GlobalEnv)
             dataname <- deparse(substitute(datain))
             if((dataname %in% all_names)[1]){
-             viewenhanceAddin(dataname)
+                viewenhanceAddin(dataname)
             }else{
-                as.environment("package:utils")$View(datain)
+                dataname <- deparse(substitute(datain))
+                as.environment("package:utils")$View(datain, dataname)
             }
         }else{
-            as.environment("package:utils")$View(datain)
+            dataname <- deparse(substitute(datain))
+            as.environment("package:utils")$View(datain, dataname)
         }
     }else{
-        as.environment("package:utils")$View(datain)
+        dataname <- deparse(substitute(datain))
+        as.environment("package:utils")$View(datain, dataname)
     }
 }
 
