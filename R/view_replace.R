@@ -30,5 +30,3 @@ View <- function(datain, replace = T){
         as.environment("package:utils")$View(datain, dataname)
     }
 }
-
-
