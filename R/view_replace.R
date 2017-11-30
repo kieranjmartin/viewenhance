@@ -11,22 +11,15 @@
 #'@return Either the View, or the app View from viewenhanceAddin
 
 View <- function(datain, replace = T){
-    if (replace == T){
-        if (is.data.frame(datain)){
-            all_names <- ls(envir = .GlobalEnv)
-            dataname <- deparse(substitute(datain))
-            if((dataname %in% all_names)[1]){
-                viewenhanceAddin(dataname)
-            }else{
-                dataname <- deparse(substitute(datain))
-                as.environment("package:utils")$View(datain, dataname)
-            }
-        }else{
-            dataname <- deparse(substitute(datain))
-            as.environment("package:utils")$View(datain, dataname)
-        }
+    all_names <- ls(envir = .GlobalEnv)
+    dataname <- deparse(substitute(datain))
+    if (replace == T & is.data.frame(datain) & (dataname %in% all_names)[1]){
+       viewenhanceAddin(dataname)
     }else{
-        dataname <- deparse(substitute(datain))
+       if((dataname %in% all_names)[1]){
         as.environment("package:utils")$View(datain, dataname)
+        }else{
+            as.environment("package:utils")$View(datain)
+        }
     }
 }
