@@ -15,7 +15,7 @@ Please note that this is a work in progress, so any bugs spotted please let me k
 To enable this tool, you will need to install the library. You can do this using devtools, as follows:
 
     library(devtools)
-    install_github("martik32/viewenhance", host = "github.roche.com/api/v3")
+    install_github("martik32/viewenhance")
     
 Then, load the library:
 
