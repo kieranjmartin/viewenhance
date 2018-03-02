@@ -1,3 +1,5 @@
+# Note this repo is now hosted on https://github.com/kieranjmartin/viewenhance and I intend to maintain it there in future
+
 
 ## Introduction 
 This package produces an add in for r studio to help browse data.
