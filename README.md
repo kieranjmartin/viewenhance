@@ -65,4 +65,4 @@ When finished, click done and this will open your subseted and column selected d
 
 ## Contact
 
-If you have any suggestions/ find any bugs, please do raise an issue, or contact me directly at kieran.martin@roche.com
+If you have any suggestions/ find any bugs, please do raise an issue.
