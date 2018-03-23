@@ -19,7 +19,7 @@ View <- function(datain, replace = T){
        if((dataname %in% all_names)[1]){
         as.environment("package:utils")$View(datain, dataname)
         }else{
-            as.environment("package:utils")$View(datain)
+            as.environment("package:utils")$View(environment()$datain)
         }
     }
 }
