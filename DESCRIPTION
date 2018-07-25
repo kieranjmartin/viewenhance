@@ -3,7 +3,7 @@ Type: Package
 Title: Addin for viewing data
 Version: 0.1.0
 Authors@R: c(person("Kieran", "Martin" , email = "kieranjmartin@gmail.com" , role = c("aut", "cre")))
-Maintainer: Kieran Martin <kieranjmartin@gmail.com
+Maintainer: Kieran Martin <kieranjmartin@gmail.com>
 License: GPL - 3
 Description: Allows more power while exploring the data. This provides a shiny add in to
     explore data frames, pick columns, filter the data.
