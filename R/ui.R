@@ -15,7 +15,9 @@ colselecter_text <- function(inval){
 #'
 #' @param datain dataframe or list
 #' @param datalist string with names of data frames
-gen_ui <- function(datain, datalist){
+#' @param location Location app is appearing
+#' 
+gen_ui <- function(datain, datalist, location){
 
  miniPage(
    tags$head(
@@ -40,7 +42,11 @@ gen_ui <- function(datain, datalist){
 
              }
                      "))),
-  gadgetTitleBar("Subset and select columns for a data.frame"),
+  gadgetTitleBar("Subset and select columns for a data.frame",
+                 left = actionButton("restart", 
+                                     ifelse(location == "dialog",
+                                     "Restart in pane",
+                                     "Restart in pop up"))),
   miniTabstripPanel(
     miniTabPanel("View and select data",
                  icon = icon("table"),

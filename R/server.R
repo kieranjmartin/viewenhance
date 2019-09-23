@@ -1,7 +1,9 @@
 #' Server code for the gadget.
 #' @param datain data entered
 #' @param list_true whether list_true is true or not
-server_in <- function(datain, list_true){
+#' @param datalist String of data frames selected
+#' @param location location app is running in
+server_in <- function(datain, list_true, datalist, location){
 server <- function(input, output, session) {
 
   #set up some values which will be updated over time
@@ -310,6 +312,25 @@ server <- function(input, output, session) {
   observeEvent(input$done, {
     rstudioapi::sendToConsole(paste0('viewenhance::View(',codestatement()$code,', replace = FALSE)'))
     invisible(stopApp())
+  })
+  
+  observeEvent(input$restart, {
+    if(location == "dialog"){
+      rstudioapi::sendToConsole(
+        paste0("viewenhance::viewenhanceAddin(datain = ",
+               datalist,
+               ", location = 'pane')")
+      )
+    }else{
+      rstudioapi::sendToConsole(
+        paste0("viewenhance::viewenhanceAddin(datain = ",
+               datalist,
+               ", location = 'dialog')")
+      )
+    }
+
+    invisible(stopApp())
+
   })
 
 

@@ -3,9 +3,14 @@
 #' @import shiny
 #' @import miniUI
 #' @param datain Provide a data frame or a list of data frames to explore
+#' @param location Location to make app appear. Can choose either "dialog"
+#'  or pane
+#'  
 #' @return A shiny box, which, when options are chosen, will put a View command into the console
 
-viewenhanceAddin<- function(datain = NULL) {
+viewenhanceAddin<- function(datain = NULL, location = c("dialog", "pane")) {
+    
+    location <- match.arg(location)
 
 
     if (!is.null(datain)){
@@ -47,13 +52,19 @@ viewenhanceAddin<- function(datain = NULL) {
         }
     }
 
-    ui <- gen_ui(datain, datalist)
-    server <- server_in(datain, list_true)
+    ui <- gen_ui(datain, datalist, location)
+    server <- server_in(datain, list_true, datalist, location)
     environment(server) <- environment()
 
 
     # Use a modal dialog as a viewr.
-    viewer <- dialogViewer("Subset", width = 1000, height = 800)
+    
+    if (location=="dialog"){
+        viewer <- dialogViewer("Subset", width = 1000, height = 800) 
+    }else{
+        viewer <- paneViewer(minHeight = 800)
+    }
+    
     #note we suppress messages. We remove this when debugging :)
     #suppressMessages(suppressWarnings(runGadget(ui, server, viewer = viewer)))
     runGadget(ui, server, viewer = viewer)
