@@ -53,6 +53,15 @@ viewenhanceAddin<- function(datain = NULL, location = c("dialog", "pane")) {
     }
 
     ui <- gen_ui(datain, datalist, location)
+    
+    if(is.null(datain)){
+        datalist <- "NULL"
+    }
+    if(is.list(datain)){
+        datalist <- deparse(substitute(datain))
+    }
+    
+    
     server <- server_in(datain, list_true, datalist, location)
     environment(server) <- environment()
 

@@ -315,6 +315,8 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$restart, {
+    
+    
     if(location == "dialog"){
       rstudioapi::sendToConsole(
         paste0("viewenhance::viewenhanceAddin(datain = ",
