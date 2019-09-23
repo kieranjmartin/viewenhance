@@ -1,6 +1,3 @@
-# Note this repo is now hosted on https://github.com/kieranjmartin/viewenhance and I intend to maintain it there in future
-
-
 ## Introduction 
 This package produces an add in for r studio to help browse data.
 
@@ -16,8 +13,9 @@ Please note that this is a work in progress, so any bugs spotted please let me k
 
 To enable this tool, you will need to install the library. You can do this using devtools, as follows:
 
-    library(devtools)
-    install_github("rpackages/viewenhance", host = "github.roche.com/api/v3")
+
+    install_github("kieranjmartin/viewenhance")
+
     
 Then, load the library:
 
@@ -67,4 +65,4 @@ When finished, click done and this will open your subseted and column selected d
 
 ## Contact
 
-If you have any suggestions/ find any bugs, please do raise an issue, or contact me directly at kieran.martin@roche.com
+If you have any suggestions/ find any bugs, please do raise an issue.
